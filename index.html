@@ -2,43 +2,24 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>⚽ Arena PIB PRO</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-
 <style>
-:root{
---gold:#f1c40f;
---blue:#00bfff;
---dark:#0d1117;
---card:#161b22;
---green:#2ecc71;
---red:#e74c3c;
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
 body{
-font-family:Montserrat,sans-serif;
-background:linear-gradient(180deg,#0d1117,#05080d);
+margin:0;
+font-family:Arial,sans-serif;
+background:#0f172a;
 color:white;
-min-height:100vh;
 }
 
 header{
-padding:25px;
+background:linear-gradient(90deg,#f1c40f,#ffd700);
+padding:20px;
 text-align:center;
-font-size:34px;
-font-weight:800;
-letter-spacing:2px;
-background:linear-gradient(90deg,var(--gold),#ffdd33);
+font-size:30px;
+font-weight:bold;
 color:#000;
-box-shadow:0 4px 20px rgba(0,0,0,.3);
 }
 
 .container{
@@ -47,94 +28,70 @@ margin:auto;
 padding:20px;
 }
 
-.grid{
-display:grid;
-grid-template-columns:1fr;
-gap:20px;
-}
-
 .card{
-background:var(--card);
-padding:22px;
-border-radius:18px;
-box-shadow:0 8px 25px rgba(0,0,0,.25);
+background:#111827;
+padding:20px;
+border-radius:16px;
+margin-bottom:20px;
+box-shadow:0 0 10px rgba(0,0,0,.3);
 }
 
 h2{
 margin-bottom:15px;
-font-size:22px;
-color:var(--gold);
+color:#f1c40f;
 }
 
 input,select,button{
 width:100%;
-padding:14px;
+padding:12px;
 margin:8px 0;
 border:none;
-border-radius:12px;
+border-radius:10px;
 font-size:16px;
 }
 
 input,select{
-background:#222;
+background:#1f2937;
 color:white;
 }
 
 button{
-background:linear-gradient(90deg,var(--blue),#005eff);
+background:#2563eb;
 color:white;
-font-weight:700;
+font-weight:bold;
 cursor:pointer;
-transition:.2s;
 }
 
 button:hover{
-transform:scale(1.02);
+opacity:.9;
 }
 
 .player{
-background:#222;
-padding:14px;
-border-radius:12px;
-margin-top:10px;
+background:#1f2937;
+padding:12px;
+border-radius:10px;
+margin-top:8px;
 display:flex;
 justify-content:space-between;
-align-items:center;
 }
-
-.tag{
-padding:4px 8px;
-border-radius:8px;
-font-size:12px;
-font-weight:700;
-}
-
-.gk{background:#ff7f50;}
-.df{background:#00bfff;}
-.mc{background:#9b59b6;}
-.at{background:#2ecc71;}
 
 .team{
+background:#1f2937;
 padding:15px;
-margin-top:15px;
-border-radius:14px;
-background:#111827;
-border:1px solid #2b3442;
+border-radius:12px;
+margin-top:10px;
 }
 
-.count{
-font-size:32px;
-font-weight:800;
-color:var(--green);
+#countdown{
+font-size:28px;
+font-weight:bold;
+color:#2ecc71;
 text-align:center;
 }
 
-.small{
-font-size:13px;
-color:#999;
-margin-top:6px;
+img{
+max-width:100%;
 }
-
 </style>
 </head>
 
@@ -144,18 +101,15 @@ margin-top:6px;
 
 <div class="container">
 
-<div class="grid">
-
 <div class="card">
 <h2>⏳ Próximo Baba</h2>
-<div class="count" id="countdown">...</div>
-<div class="small">Toda segunda às 20h</div>
+<div id="countdown"></div>
 </div>
 
 <div class="card">
-<h2>➕ Novo Jogador</h2>
+<h2>➕ Adicionar Jogador</h2>
 
-<input id="nome" placeholder="Nome do jogador">
+<input type="text" id="nome" placeholder="Nome do jogador">
 
 <select id="posicao">
 <option>Goleiro</option>
@@ -181,7 +135,7 @@ margin-top:6px;
 </div>
 
 <div class="card">
-<h2>⚽ Sorteio Inteligente</h2>
+<h2>⚽ Sorteio de Times</h2>
 
 <select id="times">
 <option value="2">2 Times</option>
@@ -189,20 +143,28 @@ margin-top:6px;
 <option value="4">4 Times</option>
 </select>
 
-<button onclick="sortear()">Gerar Times</button>
+<button onclick="sortear()">Sortear</button>
 
 <div id="resultado"></div>
 </div>
 
+<div class="card">
+<h2>🏆 Campeão da Semana</h2>
+
+<input type="text" id="nomeCampeao" placeholder="Nome do campeão">
+
+<input type="file" id="fotoCampeao" accept="image/*">
+
+<button onclick="salvarCampeao()">Salvar Campeão</button>
+
+<div id="campeaoBox"></div>
 </div>
 
 </div>
 
 <script>
 
-let jogadores = JSON.parse(localStorage.getItem("arena")) || [];
-
-// CONTAGEM
+// ================== CONTAGEM ==================
 function contador(){
 
 let now = new Date();
@@ -214,7 +176,9 @@ let faltam = (1 - dia + 7) % 7;
 alvo.setDate(now.getDate()+faltam);
 alvo.setHours(20,0,0,0);
 
-if(now > alvo) alvo.setDate(alvo.getDate()+7);
+if(now > alvo){
+alvo.setDate(alvo.getDate()+7);
+}
 
 let diff = alvo-now;
 
@@ -232,20 +196,24 @@ setInterval(contador,1000);
 contador();
 
 
-// SALVAR
+// ================== JOGADORES ==================
+let jogadores = JSON.parse(localStorage.getItem("arena")) || [];
+
 function salvar(){
 localStorage.setItem("arena",JSON.stringify(jogadores));
 render();
 }
 
-// ADD
 function addPlayer(){
 
 let nome = document.getElementById("nome").value;
 let pos = document.getElementById("posicao").value;
 let nota = Number(document.getElementById("nota").value);
 
-if(nome=="") return alert("Digite nome");
+if(nome==""){
+alert("Digite nome");
+return;
+}
 
 jogadores.push({
 nome:nome,
@@ -254,41 +222,32 @@ nota:nota
 });
 
 document.getElementById("nome").value="";
+
 salvar();
 }
 
-// RENDER
 function render(){
 
 let html="";
 
-jogadores.forEach((j,i)=>{
+jogadores.forEach((j)=>{
 
-let cls="mc";
-
-if(j.pos=="Goleiro") cls="gk";
-if(j.pos=="Zagueiro") cls="df";
-if(j.pos=="Atacante") cls="at";
-
-html+=`
+html += `
 <div class="player">
-<div>
-<strong>${j.nome}</strong><br>
-<span class="tag ${cls}">${j.pos}</span>
-</div>
-<div>⭐${j.nota}</div>
+<span>${j.nome} - ${j.pos}</span>
+<span>⭐${j.nota}</span>
 </div>
 `;
 
 });
 
-document.getElementById("lista").innerHTML=html;
+document.getElementById("lista").innerHTML = html;
 }
 
 render();
 
 
-// SORTEIO EQUILIBRADO
+// ================== SORTEIO ==================
 function sortear(){
 
 let qtd = Number(document.getElementById("times").value);
@@ -318,20 +277,83 @@ let html="";
 
 times.forEach(t=>{
 
-html+=`
+html += `
 <div class="team">
 <h3>${t.nome} (${t.total}⭐)</h3>
 `;
 
 t.jogadores.forEach(j=>{
-html+=`${j.nome} - ${j.pos} ⭐${j.nota}<br>`;
+html += `${j.nome} - ${j.pos} ⭐${j.nota}<br>`;
 });
 
-html+=`</div>`;
+html += `</div>`;
 
 });
 
-document.getElementById("resultado").innerHTML=html;
+document.getElementById("resultado").innerHTML = html;
+}
+
+
+// ================== CAMPEÃO ==================
+window.onload = function(){
+mostrarCampeao();
+}
+
+function salvarCampeao(){
+
+let nome = document.getElementById("nomeCampeao").value;
+let file = document.getElementById("fotoCampeao").files[0];
+
+if(!nome || !file){
+alert("Digite nome e escolha foto");
+return;
+}
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+let campeao = {
+nome:nome,
+foto:e.target.result
+};
+
+localStorage.setItem("campeaoArena", JSON.stringify(campeao));
+
+mostrarCampeao();
+
+}
+
+reader.readAsDataURL(file);
+
+}
+
+function mostrarCampeao(){
+
+let data = JSON.parse(localStorage.getItem("campeaoArena"));
+
+if(!data) return;
+
+document.getElementById("campeaoBox").innerHTML = `
+<div style="margin-top:20px;background:#1f2937;padding:20px;border-radius:15px;text-align:center;">
+
+<img src="${data.foto}" style="
+width:160px;
+height:160px;
+border-radius:50%;
+object-fit:cover;
+border:4px solid gold;
+box-shadow:0 0 20px gold;
+">
+
+<h2 style="margin-top:15px;color:gold;">
+🏆 ${data.nome}
+</h2>
+
+<p>Campeão Atual</p>
+
+</div>
+`;
 
 }
 
