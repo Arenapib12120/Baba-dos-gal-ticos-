@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚽ Arena PIB PRO</title>
+<title>⚽ Baba dos Galáticos</title>
 
 <style>
 body{
@@ -23,7 +23,7 @@ color:#000;
 }
 
 .container{
-max-width:800px;
+max-width:900px;
 margin:auto;
 padding:20px;
 }
@@ -33,12 +33,11 @@ background:#111827;
 padding:20px;
 border-radius:16px;
 margin-bottom:20px;
-box-shadow:0 0 10px rgba(0,0,0,.3);
 }
 
 h2{
-margin-bottom:15px;
 color:#f1c40f;
+margin-bottom:15px;
 }
 
 input,select,button{
@@ -62,13 +61,9 @@ font-weight:bold;
 cursor:pointer;
 }
 
-button:hover{
-opacity:.9;
-}
-
 .player{
 background:#1f2937;
-padding:12px;
+padding:10px;
 border-radius:10px;
 margin-top:8px;
 display:flex;
@@ -79,54 +74,50 @@ justify-content:space-between;
 background:#1f2937;
 padding:15px;
 border-radius:12px;
-margin-top:10px;
+margin-top:15px;
 }
 
-#countdown{
-font-size:28px;
+.linha{
+padding:8px;
+margin:6px 0;
+border-radius:8px;
+background:#0b1220;
+}
+
+.gol{
+background:#f39c12;
+color:#000;
 font-weight:bold;
-color:#2ecc71;
-text-align:center;
 }
 
-img{
-max-width:100%;
-}
 </style>
 </head>
 
 <body>
 
-<header>⚽ ARENA PIB PRO</header>
+<header>⚽ BABA DOS GALÁTICOS</header>
 
 <div class="container">
 
 <div class="card">
-<h2>⏳ Próximo Baba</h2>
-<div id="countdown"></div>
-</div>
-
-<div class="card">
 <h2>➕ Adicionar Jogador</h2>
 
-<input type="text" id="nome" placeholder="Nome do jogador">
+<input type="text" id="nome" placeholder="Nome">
 
 <select id="posicao">
 <option>Goleiro</option>
-<option>Zagueiro</option>
-<option>Meio</option>
-<option>Atacante</option>
+<option>Linha</option>
 </select>
 
 <select id="nota">
-<option value="1">⭐ 1</option>
-<option value="2">⭐⭐ 2</option>
-<option value="3">⭐⭐⭐ 3</option>
-<option value="4">⭐⭐⭐⭐ 4</option>
-<option value="5">⭐⭐⭐⭐⭐ 5</option>
+<option value="1">⭐1</option>
+<option value="2">⭐2</option>
+<option value="3">⭐3</option>
+<option value="4">⭐4</option>
+<option value="5">⭐5</option>
 </select>
 
-<button onclick="addPlayer()">Salvar Jogador</button>
+<button onclick="addPlayer()">Salvar</button>
 </div>
 
 <div class="card">
@@ -135,7 +126,7 @@ max-width:100%;
 </div>
 
 <div class="card">
-<h2>⚽ Sorteio de Times</h2>
+<h2>⚽ Sortear Times Futsal</h2>
 
 <select id="times">
 <option value="2">2 Times</option>
@@ -143,64 +134,19 @@ max-width:100%;
 <option value="4">4 Times</option>
 </select>
 
-<button onclick="sortear()">Sortear</button>
+<button onclick="sortear()">Sortear Agora</button>
 
 <div id="resultado"></div>
-</div>
-
-<div class="card">
-<h2>🏆 Campeão da Semana</h2>
-
-<input type="text" id="nomeCampeao" placeholder="Nome do campeão">
-
-<input type="file" id="fotoCampeao" accept="image/*">
-
-<button onclick="salvarCampeao()">Salvar Campeão</button>
-
-<div id="campeaoBox"></div>
 </div>
 
 </div>
 
 <script>
 
-// ================== CONTAGEM ==================
-function contador(){
-
-let now = new Date();
-let alvo = new Date();
-
-let dia = now.getDay();
-let faltam = (1 - dia + 7) % 7;
-
-alvo.setDate(now.getDate()+faltam);
-alvo.setHours(20,0,0,0);
-
-if(now > alvo){
-alvo.setDate(alvo.getDate()+7);
-}
-
-let diff = alvo-now;
-
-let d = Math.floor(diff/86400000);
-let h = Math.floor(diff%86400000/3600000);
-let m = Math.floor(diff%3600000/60000);
-let s = Math.floor(diff%60000/1000);
-
-document.getElementById("countdown").innerHTML =
-`${d}d ${h}h ${m}m ${s}s`;
-
-}
-
-setInterval(contador,1000);
-contador();
-
-
-// ================== JOGADORES ==================
-let jogadores = JSON.parse(localStorage.getItem("arena")) || [];
+let jogadores = JSON.parse(localStorage.getItem("galaticos")) || [];
 
 function salvar(){
-localStorage.setItem("arena",JSON.stringify(jogadores));
+localStorage.setItem("galaticos",JSON.stringify(jogadores));
 render();
 }
 
@@ -210,10 +156,7 @@ let nome = document.getElementById("nome").value;
 let pos = document.getElementById("posicao").value;
 let nota = Number(document.getElementById("nota").value);
 
-if(nome==""){
-alert("Digite nome");
-return;
-}
+if(nome=="") return alert("Digite nome");
 
 jogadores.push({
 nome:nome,
@@ -222,7 +165,6 @@ nota:nota
 });
 
 document.getElementById("nome").value="";
-
 salvar();
 }
 
@@ -230,7 +172,7 @@ function render(){
 
 let html="";
 
-jogadores.forEach((j)=>{
+jogadores.forEach(j=>{
 
 html += `
 <div class="player">
@@ -247,32 +189,50 @@ document.getElementById("lista").innerHTML = html;
 render();
 
 
-// ================== SORTEIO ==================
+// =======================
+// SORTEIO FUTSAL 4 LINHA 1 GOL
+// =======================
 function sortear(){
 
 let qtd = Number(document.getElementById("times").value);
 
-let lista = [...jogadores].sort((a,b)=>b.nota-a.nota);
+let goleiros = jogadores.filter(j=>j.pos=="Goleiro").sort((a,b)=>b.nota-a.nota);
+let linha = jogadores.filter(j=>j.pos=="Linha").sort((a,b)=>b.nota-a.nota);
 
 let times = [];
 
 for(let i=0;i<qtd;i++){
 times.push({
-nome:"Time "+String.fromCharCode(65+i),
-jogadores:[],
+nome:"Galáticos "+String.fromCharCode(65+i),
+goleiro:null,
+linha:[],
 total:0
 });
 }
 
-lista.forEach(p=>{
+// distribuir goleiros
+goleiros.forEach((g,i)=>{
+if(i<qtd){
+times[i].goleiro = g;
+times[i].total += g.nota;
+}
+});
+
+// distribuir linha equilibrado
+linha.forEach(p=>{
 
 times.sort((a,b)=>a.total-b.total);
 
-times[0].jogadores.push(p);
-times[0].total += p.nota;
+let destino = times.find(t=>t.linha.length < 4);
+
+if(destino){
+destino.linha.push(p);
+destino.total += p.nota;
+}
 
 });
 
+// mostrar
 let html="";
 
 times.forEach(t=>{
@@ -280,10 +240,20 @@ times.forEach(t=>{
 html += `
 <div class="team">
 <h3>${t.nome} (${t.total}⭐)</h3>
+
+<div class="linha gol">
+🥅 GOLEIRO: ${t.goleiro ? t.goleiro.nome+" ⭐"+t.goleiro.nota : "Sem goleiro"}
+</div>
 `;
 
-t.jogadores.forEach(j=>{
-html += `${j.nome} - ${j.pos} ⭐${j.nota}<br>`;
+t.linha.forEach((j,index)=>{
+
+html += `
+<div class="linha">
+👟 Linha ${index+1}: ${j.nome} ⭐${j.nota}
+</div>
+`;
+
 });
 
 html += `</div>`;
@@ -291,69 +261,6 @@ html += `</div>`;
 });
 
 document.getElementById("resultado").innerHTML = html;
-}
-
-
-// ================== CAMPEÃO ==================
-window.onload = function(){
-mostrarCampeao();
-}
-
-function salvarCampeao(){
-
-let nome = document.getElementById("nomeCampeao").value;
-let file = document.getElementById("fotoCampeao").files[0];
-
-if(!nome || !file){
-alert("Digite nome e escolha foto");
-return;
-}
-
-let reader = new FileReader();
-
-reader.onload = function(e){
-
-let campeao = {
-nome:nome,
-foto:e.target.result
-};
-
-localStorage.setItem("campeaoArena", JSON.stringify(campeao));
-
-mostrarCampeao();
-
-}
-
-reader.readAsDataURL(file);
-
-}
-
-function mostrarCampeao(){
-
-let data = JSON.parse(localStorage.getItem("campeaoArena"));
-
-if(!data) return;
-
-document.getElementById("campeaoBox").innerHTML = `
-<div style="margin-top:20px;background:#1f2937;padding:20px;border-radius:15px;text-align:center;">
-
-<img src="${data.foto}" style="
-width:160px;
-height:160px;
-border-radius:50%;
-object-fit:cover;
-border:4px solid gold;
-box-shadow:0 0 20px gold;
-">
-
-<h2 style="margin-top:15px;color:gold;">
-🏆 ${data.nome}
-</h2>
-
-<p>Campeão Atual</p>
-
-</div>
-`;
 
 }
 
