@@ -61,11 +61,14 @@ font-weight:bold;
 cursor:pointer;
 }
 
-.player{
+.player,.linha{
 background:#1f2937;
 padding:10px;
 border-radius:10px;
 margin-top:8px;
+}
+
+.player{
 display:flex;
 justify-content:space-between;
 }
@@ -77,19 +80,28 @@ border-radius:12px;
 margin-top:15px;
 }
 
-.linha{
-padding:8px;
-margin:6px 0;
-border-radius:8px;
-background:#0b1220;
-}
-
 .gol{
 background:#f39c12;
 color:#000;
 font-weight:bold;
 }
 
+.campeao{
+text-align:center;
+background:#1f2937;
+padding:20px;
+border-radius:15px;
+margin-top:15px;
+}
+
+.campeao img{
+width:160px;
+height:160px;
+border-radius:50%;
+object-fit:cover;
+border:4px solid gold;
+box-shadow:0 0 20px gold;
+}
 </style>
 </head>
 
@@ -126,7 +138,7 @@ font-weight:bold;
 </div>
 
 <div class="card">
-<h2>⚽ Sortear Times Futsal</h2>
+<h2>⚽ Sortear Times</h2>
 
 <select id="times">
 <option value="2">2 Times</option>
@@ -137,6 +149,18 @@ font-weight:bold;
 <button onclick="sortear()">Sortear Agora</button>
 
 <div id="resultado"></div>
+</div>
+
+<div class="card">
+<h2>🏆 Campeão Atual</h2>
+
+<input type="text" id="nomeCampeao" placeholder="Nome do campeão">
+
+<input type="file" id="fotoCampeao" accept="image/*">
+
+<button onclick="salvarCampeao()">Salvar Campeão</button>
+
+<div id="campeaoBox"></div>
 </div>
 
 </div>
@@ -158,11 +182,7 @@ let nota = Number(document.getElementById("nota").value);
 
 if(nome=="") return alert("Digite nome");
 
-jogadores.push({
-nome:nome,
-pos:pos,
-nota:nota
-});
+jogadores.push({nome,pos,nota});
 
 document.getElementById("nome").value="";
 salvar();
@@ -189,9 +209,7 @@ document.getElementById("lista").innerHTML = html;
 render();
 
 
-// =======================
-// SORTEIO FUTSAL 4 LINHA 1 GOL
-// =======================
+// ================= SORTERIO FUTSAL =================
 function sortear(){
 
 let qtd = Number(document.getElementById("times").value);
@@ -210,7 +228,6 @@ total:0
 });
 }
 
-// distribuir goleiros
 goleiros.forEach((g,i)=>{
 if(i<qtd){
 times[i].goleiro = g;
@@ -218,7 +235,6 @@ times[i].total += g.nota;
 }
 });
 
-// distribuir linha equilibrado
 linha.forEach(p=>{
 
 times.sort((a,b)=>a.total-b.total);
@@ -232,7 +248,6 @@ destino.total += p.nota;
 
 });
 
-// mostrar
 let html="";
 
 times.forEach(t=>{
@@ -242,18 +257,12 @@ html += `
 <h3>${t.nome} (${t.total}⭐)</h3>
 
 <div class="linha gol">
-🥅 GOLEIRO: ${t.goleiro ? t.goleiro.nome+" ⭐"+t.goleiro.nota : "Sem goleiro"}
+🥅 ${t.goleiro ? t.goleiro.nome+" ⭐"+t.goleiro.nota : "Sem goleiro"}
 </div>
 `;
 
 t.linha.forEach((j,index)=>{
-
-html += `
-<div class="linha">
-👟 Linha ${index+1}: ${j.nome} ⭐${j.nota}
-</div>
-`;
-
+html += `<div class="linha">👟 Linha ${index+1}: ${j.nome} ⭐${j.nota}</div>`;
 });
 
 html += `</div>`;
@@ -262,6 +271,59 @@ html += `</div>`;
 
 document.getElementById("resultado").innerHTML = html;
 
+}
+
+
+// ================= CAMPEÃO =================
+window.onload = function(){
+mostrarCampeao();
+}
+
+function salvarCampeao(){
+
+let nome = document.getElementById("nomeCampeao").value;
+let file = document.getElementById("fotoCampeao").files[0];
+
+if(!nome || !file){
+alert("Digite nome e escolha foto");
+return;
+}
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+localStorage.setItem("campeaoGalaticos", JSON.stringify({
+nome:nome,
+foto:e.target.result
+}));
+
+mostrarCampeao();
+
+}
+
+reader.readAsDataURL(file);
+}
+
+function mostrarCampeao(){
+
+let data = JSON.parse(localStorage.getItem("campeaoGalaticos"));
+
+if(!data) return;
+
+document.getElementById("campeaoBox").innerHTML = `
+<div class="campeao">
+
+<img src="${data.foto}">
+
+<h2 style="color:gold;margin-top:15px;">
+🏆 ${data.nome}
+</h2>
+
+<p>Campeão Atual</p>
+
+</div>
+`;
 }
 
 </script>
