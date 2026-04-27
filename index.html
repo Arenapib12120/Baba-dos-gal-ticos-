@@ -2,73 +2,169 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arena PIB</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>⚽ Arena PIB PRO</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
+:root{
+--gold:#f1c40f;
+--blue:#00bfff;
+--dark:#0d1117;
+--card:#161b22;
+--green:#2ecc71;
+--red:#e74c3c;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#111;
-    color:#fff;
-    text-align:center;
+font-family:Montserrat,sans-serif;
+background:linear-gradient(180deg,#0d1117,#05080d);
+color:white;
+min-height:100vh;
 }
+
 header{
-    background:#f1c40f;
-    color:#000;
-    padding:20px;
-    font-size:28px;
-    font-weight:bold;
+padding:25px;
+text-align:center;
+font-size:34px;
+font-weight:800;
+letter-spacing:2px;
+background:linear-gradient(90deg,var(--gold),#ffdd33);
+color:#000;
+box-shadow:0 4px 20px rgba(0,0,0,.3);
 }
-.box{
-    margin:20px auto;
-    padding:20px;
-    max-width:500px;
-    background:#1e1e1e;
-    border-radius:12px;
+
+.container{
+max-width:800px;
+margin:auto;
+padding:20px;
 }
+
+.grid{
+display:grid;
+grid-template-columns:1fr;
+gap:20px;
+}
+
+.card{
+background:var(--card);
+padding:22px;
+border-radius:18px;
+box-shadow:0 8px 25px rgba(0,0,0,.25);
+}
+
+h2{
+margin-bottom:15px;
+font-size:22px;
+color:var(--gold);
+}
+
 input,select,button{
-    width:90%;
-    padding:12px;
-    margin:8px;
-    border:none;
-    border-radius:8px;
+width:100%;
+padding:14px;
+margin:8px 0;
+border:none;
+border-radius:12px;
+font-size:16px;
 }
+
+input,select{
+background:#222;
+color:white;
+}
+
 button{
-    background:#f1c40f;
-    font-weight:bold;
+background:linear-gradient(90deg,var(--blue),#005eff);
+color:white;
+font-weight:700;
+cursor:pointer;
+transition:.2s;
 }
+
+button:hover{
+transform:scale(1.02);
+}
+
 .player{
-    background:#333;
-    margin:5px;
-    padding:10px;
-    border-radius:8px;
+background:#222;
+padding:14px;
+border-radius:12px;
+margin-top:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
+
+.tag{
+padding:4px 8px;
+border-radius:8px;
+font-size:12px;
+font-weight:700;
+}
+
+.gk{background:#ff7f50;}
+.df{background:#00bfff;}
+.mc{background:#9b59b6;}
+.at{background:#2ecc71;}
+
+.team{
+padding:15px;
+margin-top:15px;
+border-radius:14px;
+background:#111827;
+border:1px solid #2b3442;
+}
+
+.count{
+font-size:32px;
+font-weight:800;
+color:var(--green);
+text-align:center;
+}
+
+.small{
+font-size:13px;
+color:#999;
+margin-top:6px;
+}
+
 </style>
 </head>
 
 <body>
 
-<header>⚽ ARENA PIB</header>
+<header>⚽ ARENA PIB PRO</header>
 
-<div class="box">
-<h2>Contagem para o Baba</h2>
-<div id="countdown">Carregando...</div>
+<div class="container">
+
+<div class="grid">
+
+<div class="card">
+<h2>⏳ Próximo Baba</h2>
+<div class="count" id="countdown">...</div>
+<div class="small">Toda segunda às 20h</div>
 </div>
 
-<div class="box">
-<h2>Adicionar Jogador</h2>
+<div class="card">
+<h2>➕ Novo Jogador</h2>
 
-<input type="text" id="nome" placeholder="Nome">
+<input id="nome" placeholder="Nome do jogador">
 
 <select id="posicao">
-<option>Atacante</option>
-<option>Meio</option>
-<option>Zagueiro</option>
 <option>Goleiro</option>
+<option>Zagueiro</option>
+<option>Meio</option>
+<option>Atacante</option>
 </select>
 
-<select id="estrela">
+<select id="nota">
 <option value="1">⭐ 1</option>
 <option value="2">⭐⭐ 2</option>
 <option value="3">⭐⭐⭐ 3</option>
@@ -76,55 +172,51 @@ button{
 <option value="5">⭐⭐⭐⭐⭐ 5</option>
 </select>
 
-<button onclick="addPlayerFirebase()">Adicionar</button>
+<button onclick="addPlayer()">Salvar Jogador</button>
 </div>
 
-<div class="box">
-<h2>Jogadores</h2>
+<div class="card">
+<h2>📋 Jogadores</h2>
 <div id="lista"></div>
 </div>
 
-<script type="module">
+<div class="card">
+<h2>⚽ Sorteio Inteligente</h2>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+<select id="times">
+<option value="2">2 Times</option>
+<option value="3">3 Times</option>
+<option value="4">4 Times</option>
+</select>
 
-import {
-getDatabase,
-ref,
-push,
-onValue
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+<button onclick="sortear()">Gerar Times</button>
 
-const firebaseConfig = {
-apiKey: "AIzaSyBJmCBbOCIyIBc_H75wmBI9O_iIkiU_9E",
-authDomain: "galaticos-2283d.firebaseapp.com",
-databaseURL:"https://galaticos-2283d-default-rtdb.firebaseio.com",
-projectId: "galaticos-2283d",
-storageBucket: "galaticos-2283d.appspot.com",
-messagingSenderId: "485226353231",
-appId: "1:485226353231:web:b8cde1da83acc27aa9f83a"
-};
+<div id="resultado"></div>
+</div>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const playersRef = ref(db,"jogadores");
+</div>
+
+</div>
+
+<script>
+
+let jogadores = JSON.parse(localStorage.getItem("arena")) || [];
 
 // CONTAGEM
-function countdown(){
+function contador(){
+
 let now = new Date();
-let target = new Date();
+let alvo = new Date();
 
-let day = now.getDay();
-let faltam = (1 - day + 7) % 7;
+let dia = now.getDay();
+let faltam = (1 - dia + 7) % 7;
 
-target.setDate(now.getDate()+faltam);
-target.setHours(20,0,0,0);
+alvo.setDate(now.getDate()+faltam);
+alvo.setHours(20,0,0,0);
 
-if(now > target){
-target.setDate(target.getDate()+7);
-}
+if(now > alvo) alvo.setDate(alvo.getDate()+7);
 
-let diff = target - now;
+let diff = alvo-now;
 
 let d = Math.floor(diff/86400000);
 let h = Math.floor(diff%86400000/3600000);
@@ -133,49 +225,115 @@ let s = Math.floor(diff%60000/1000);
 
 document.getElementById("countdown").innerHTML =
 `${d}d ${h}h ${m}m ${s}s`;
+
 }
 
-setInterval(countdown,1000);
-countdown();
+setInterval(contador,1000);
+contador();
 
-// ADICIONAR
-window.addPlayerFirebase = function(){
+
+// SALVAR
+function salvar(){
+localStorage.setItem("arena",JSON.stringify(jogadores));
+render();
+}
+
+// ADD
+function addPlayer(){
 
 let nome = document.getElementById("nome").value;
-let posicao = document.getElementById("posicao").value;
-let quality = document.getElementById("estrela").value;
+let pos = document.getElementById("posicao").value;
+let nota = Number(document.getElementById("nota").value);
 
 if(nome=="") return alert("Digite nome");
 
-push(playersRef,{
-nome,
-position:posicao,
-quality:Number(quality)
+jogadores.push({
+nome:nome,
+pos:pos,
+nota:nota
 });
 
 document.getElementById("nome").value="";
+salvar();
 }
 
-// LISTAR
-onValue(playersRef,(snapshot)=>{
+// RENDER
+function render(){
 
-let data = snapshot.val();
-let html = "";
+let html="";
 
-for(let id in data){
+jogadores.forEach((j,i)=>{
 
-let p = data[id];
+let cls="mc";
 
-html += `
+if(j.pos=="Goleiro") cls="gk";
+if(j.pos=="Zagueiro") cls="df";
+if(j.pos=="Atacante") cls="at";
+
+html+=`
 <div class="player">
-${p.nome} - ${p.position} - ⭐${p.quality}
+<div>
+<strong>${j.nome}</strong><br>
+<span class="tag ${cls}">${j.pos}</span>
+</div>
+<div>⭐${j.nota}</div>
 </div>
 `;
-}
-
-document.getElementById("lista").innerHTML = html;
 
 });
+
+document.getElementById("lista").innerHTML=html;
+}
+
+render();
+
+
+// SORTEIO EQUILIBRADO
+function sortear(){
+
+let qtd = Number(document.getElementById("times").value);
+
+let lista = [...jogadores].sort((a,b)=>b.nota-a.nota);
+
+let times = [];
+
+for(let i=0;i<qtd;i++){
+times.push({
+nome:"Time "+String.fromCharCode(65+i),
+jogadores:[],
+total:0
+});
+}
+
+lista.forEach(p=>{
+
+times.sort((a,b)=>a.total-b.total);
+
+times[0].jogadores.push(p);
+times[0].total += p.nota;
+
+});
+
+let html="";
+
+times.forEach(t=>{
+
+html+=`
+<div class="team">
+<h3>${t.nome} (${t.total}⭐)</h3>
+`;
+
+t.jogadores.forEach(j=>{
+html+=`${j.nome} - ${j.pos} ⭐${j.nota}<br>`;
+});
+
+html+=`</div>`;
+
+});
+
+document.getElementById("resultado").innerHTML=html;
+
+}
 
 </script>
 
