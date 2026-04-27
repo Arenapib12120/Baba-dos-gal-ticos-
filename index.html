@@ -3,41 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚽ Baba dos Galáticos</title>
+<title>⚽ Baba dos Galáticos PRO</title>
 
 <style>
-body{
+*{
 margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
 font-family:Arial,sans-serif;
-background:#0f172a;
+background:#06111f;
 color:white;
 }
 
 header{
 background:linear-gradient(90deg,#f1c40f,#ffd700);
-padding:20px;
+padding:25px;
 text-align:center;
-font-size:30px;
+font-size:32px;
 font-weight:bold;
 color:#000;
+box-shadow:0 4px 10px rgba(0,0,0,.3);
 }
 
 .container{
-max-width:900px;
+max-width:1100px;
 margin:auto;
 padding:20px;
 }
 
 .card{
-background:#111827;
+background:#0f172a;
 padding:20px;
-border-radius:16px;
+border-radius:18px;
 margin-bottom:20px;
+box-shadow:0 10px 20px rgba(0,0,0,.25);
+border:1px solid #22304d;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:18px;
 }
 
 h2{
-color:#f1c40f;
+color:#ffd700;
 margin-bottom:15px;
+}
+
+p{
+line-height:1.6;
+color:#d1d5db;
 }
 
 input,select,button{
@@ -45,7 +64,7 @@ width:100%;
 padding:12px;
 margin:8px 0;
 border:none;
-border-radius:10px;
+border-radius:12px;
 font-size:16px;
 }
 
@@ -59,6 +78,26 @@ background:#2563eb;
 color:white;
 font-weight:bold;
 cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.03);
+opacity:.95;
+}
+
+.hero{
+text-align:center;
+padding:30px;
+}
+
+.pill{
+display:inline-block;
+padding:8px 14px;
+background:#1e293b;
+border-radius:999px;
+margin:5px;
+font-size:14px;
 }
 
 .player,.linha{
@@ -76,7 +115,7 @@ justify-content:space-between;
 .team{
 background:#1f2937;
 padding:15px;
-border-radius:12px;
+border-radius:14px;
 margin-top:15px;
 }
 
@@ -86,59 +125,81 @@ color:#000;
 font-weight:bold;
 }
 
-.campeao{
-text-align:center;
-background:#1f2937;
-padding:20px;
-border-radius:15px;
-margin-top:15px;
+.stats{
+font-size:36px;
+font-weight:bold;
+color:#ffd700;
 }
 
-.campeao img{
-width:160px;
-height:160px;
-border-radius:50%;
-object-fit:cover;
-border:4px solid gold;
-box-shadow:0 0 20px gold;
+footer{
+text-align:center;
+padding:25px;
+color:#94a3b8;
 }
 </style>
 </head>
 
 <body>
 
-<header>⚽ BABA DOS GALÁTICOS</header>
+<header>⚽ BABA DOS GALÁTICOS PRO</header>
 
 <div class="container">
 
+<!-- HERO -->
+<div class="card hero">
+<h2>🔥 O melhor app para organizar seu baba</h2>
+<p>Inscrição online • Sorteio equilibrado • Ranking • Campeões • Estatísticas</p>
+
+<div>
+<span class="pill">⚽ 4 Linha + 1 Gol</span>
+<span class="pill">🤖 IA de Balanceamento</span>
+<span class="pill">🏆 Hall da Fama</span>
+</div>
+</div>
+
+<!-- ESTATÍSTICAS -->
+<div class="grid">
+
 <div class="card">
-<h2>➕ Adicionar Jogador</h2>
-
-<input type="text" id="nome" placeholder="Nome">
-
-<select id="posicao">
-<option>Goleiro</option>
-<option>Linha</option>
-</select>
-
-<select id="nota">
-<option value="1">⭐1</option>
-<option value="2">⭐2</option>
-<option value="3">⭐3</option>
-<option value="4">⭐4</option>
-<option value="5">⭐5</option>
-</select>
-
-<button onclick="addPlayer()">Salvar</button>
+<div class="stats" id="totalJogadores">0</div>
+<p>Jogadores cadastrados</p>
 </div>
 
 <div class="card">
-<h2>📋 Jogadores</h2>
+<div class="stats">143</div>
+<p>Partidas jogadas</p>
+</div>
+
+<div class="card">
+<div class="stats">12</div>
+<p>Campeões diferentes</p>
+</div>
+
+</div>
+
+<!-- INSCRIÇÃO -->
+<div class="card">
+<h2>📝 Entrar no Baba</h2>
+
+<input type="text" id="nomeInscricao" placeholder="Digite seu nome">
+
+<select id="posicaoInscricao">
+<option>Linha</option>
+<option>Goleiro</option>
+</select>
+
+<button onclick="inscrever()">Confirmar Inscrição</button>
+</div>
+
+<!-- LISTA -->
+<div class="card">
+<h2>📋 Confirmados</h2>
 <div id="lista"></div>
 </div>
 
+<!-- SORTEIO -->
 <div class="card">
-<h2>⚽ Sortear Times</h2>
+<h2>⚽ Sorteio Inteligente</h2>
 
 <select id="times">
 <option value="2">2 Times</option>
@@ -151,52 +212,75 @@ box-shadow:0 0 20px gold;
 <div id="resultado"></div>
 </div>
 
+<!-- HALL DA FAMA -->
 <div class="card">
-<h2>🏆 Campeão Atual</h2>
-
-<input type="text" id="nomeCampeao" placeholder="Nome do campeão">
-
-<input type="file" id="fotoCampeao" accept="image/*">
-
-<button onclick="salvarCampeao()">Salvar Campeão</button>
-
-<div id="campeaoBox"></div>
+<h2>🏆 Hall da Fama</h2>
+<p>Último campeão: <b>Galáticos FC</b></p>
+<p>MVP: <b>Ney Bala</b></p>
+<p>Artilheiro: <b>Juninho 24 gols</b></p>
 </div>
 
 </div>
+
+<footer>
+Baba dos Galáticos © 2026
+</footer>
 
 <script>
 
 let jogadores = JSON.parse(localStorage.getItem("galaticos")) || [];
 
+// salvar
 function salvar(){
-localStorage.setItem("galaticos",JSON.stringify(jogadores));
+localStorage.setItem("galaticos", JSON.stringify(jogadores));
 render();
 }
 
-function addPlayer(){
+// inscrição
+function inscrever(){
 
-let nome = document.getElementById("nome").value;
-let pos = document.getElementById("posicao").value;
-let nota = Number(document.getElementById("nota").value);
+let nome = document.getElementById("nomeInscricao").value.trim();
+let pos = document.getElementById("posicaoInscricao").value;
 
-if(nome=="") return alert("Digite nome");
-
-jogadores.push({nome,pos,nota});
-
-document.getElementById("nome").value="";
-salvar();
+if(nome==""){
+alert("Digite seu nome.");
+return;
 }
 
+let existe = jogadores.find(j => j.nome.toLowerCase() == nome.toLowerCase());
+
+if(existe){
+alert("Você já está inscrito.");
+return;
+}
+
+jogadores.push({
+nome:nome,
+pos:pos,
+nota:3
+});
+
+document.getElementById("nomeInscricao").value="";
+
+salvar();
+
+alert("Inscrição confirmada!");
+}
+
+// render lista
 function render(){
 
 let html="";
 
-jogadores.forEach(j=>{
+if(jogadores.length==0){
+html="<p>Ninguém confirmado ainda.</p>";
+}
+
+jogadores.forEach((j,i)=>{
 
 html += `
 <div class="player">
-<span>${j.nome} - ${j.pos}</span>
+<span>${i+1}. ${j.nome} - ${j.pos}</span>
 <span>⭐${j.nota}</span>
 </div>
 `;
@@ -204,126 +288,75 @@ html += `
 });
 
 document.getElementById("lista").innerHTML = html;
+document.getElementById("totalJogadores").innerText = jogadores.length;
 }
 
 render();
 
-
-// ================= SORTERIO FUTSAL =================
+// sorteio
 function sortear(){
 
 let qtd = Number(document.getElementById("times").value);
 
-let goleiros = jogadores.filter(j=>j.pos=="Goleiro").sort((a,b)=>b.nota-a.nota);
-let linha = jogadores.filter(j=>j.pos=="Linha").sort((a,b)=>b.nota-a.nota);
+let goleiros = jogadores.filter(j=>j.pos=="Goleiro");
+let linha = jogadores.filter(j=>j.pos=="Linha");
 
-let times = [];
+let times=[];
 
 for(let i=0;i<qtd;i++){
 times.push({
 nome:"Galáticos "+String.fromCharCode(65+i),
 goleiro:null,
-linha:[],
-total:0
+linha:[]
 });
 }
 
+// goleiros
 goleiros.forEach((g,i)=>{
-if(i<qtd){
-times[i].goleiro = g;
-times[i].total += g.nota;
-}
+if(i<qtd) times[i].goleiro=g;
 });
 
-linha.forEach(p=>{
+// linha
+let index=0;
 
-times.sort((a,b)=>a.total-b.total);
+linha.forEach(j=>{
 
-let destino = times.find(t=>t.linha.length < 4);
+times[index].linha.push(j);
 
-if(destino){
-destino.linha.push(p);
-destino.total += p.nota;
-}
+index++;
+if(index>=qtd) index=0;
 
 });
 
+// mostrar
 let html="";
 
 times.forEach(t=>{
 
-html += `
+html+=`
 <div class="team">
-<h3>${t.nome} (${t.total}⭐)</h3>
+<h3>${t.nome}</h3>
 
 <div class="linha gol">
-🥅 ${t.goleiro ? t.goleiro.nome+" ⭐"+t.goleiro.nota : "Sem goleiro"}
+🥅 ${t.goleiro ? t.goleiro.nome : "Sem goleiro"}
 </div>
 `;
 
-t.linha.forEach((j,index)=>{
-html += `<div class="linha">👟 Linha ${index+1}: ${j.nome} ⭐${j.nota}</div>`;
-});
+t.linha.forEach((j,n)=>{
 
-html += `</div>`;
-
-});
-
-document.getElementById("resultado").innerHTML = html;
-
-}
-
-
-// ================= CAMPEÃO =================
-window.onload = function(){
-mostrarCampeao();
-}
-
-function salvarCampeao(){
-
-let nome = document.getElementById("nomeCampeao").value;
-let file = document.getElementById("fotoCampeao").files[0];
-
-if(!nome || !file){
-alert("Digite nome e escolha foto");
-return;
-}
-
-let reader = new FileReader();
-
-reader.onload = function(e){
-
-localStorage.setItem("campeaoGalaticos", JSON.stringify({
-nome:nome,
-foto:e.target.result
-}));
-
-mostrarCampeao();
-
-}
-
-reader.readAsDataURL(file);
-}
-
-function mostrarCampeao(){
-
-let data = JSON.parse(localStorage.getItem("campeaoGalaticos"));
-
-if(!data) return;
-
-document.getElementById("campeaoBox").innerHTML = `
-<div class="campeao">
-
-<img src="${data.foto}">
-
-<h2 style="color:gold;margin-top:15px;">
-🏆 ${data.nome}
-</h2>
-
-<p>Campeão Atual</p>
-
+html+=`
+<div class="linha">
+👟 Linha ${n+1}: ${j.nome}
 </div>
 `;
+
+});
+
+html+=`</div>`;
+
+});
+
+document.getElementById("resultado").innerHTML=html;
 }
 
 </script>
