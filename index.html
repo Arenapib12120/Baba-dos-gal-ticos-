@@ -1,114 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arena PIB</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#111;
+    color:#fff;
+    text-align:center;
+}
+header{
+    background:#f1c40f;
+    color:#000;
+    padding:20px;
+    font-size:28px;
+    font-weight:bold;
+}
+.box{
+    margin:20px auto;
+    padding:20px;
+    max-width:500px;
+    background:#1e1e1e;
+    border-radius:12px;
+}
+input,select,button{
+    width:90%;
+    padding:12px;
+    margin:8px;
+    border:none;
+    border-radius:8px;
+}
+button{
+    background:#f1c40f;
+    font-weight:bold;
+}
+.player{
+    background:#333;
+    margin:5px;
+    padding:10px;
+    border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>⚽ ARENA PIB</header>
+
+<div class="box">
+<h2>Contagem para o Baba</h2>
+<div id="countdown">Carregando...</div>
+</div>
+
+<div class="box">
+<h2>Adicionar Jogador</h2>
+
+<input type="text" id="nome" placeholder="Nome">
+
+<select id="posicao">
+<option>Atacante</option>
+<option>Meio</option>
+<option>Zagueiro</option>
+<option>Goleiro</option>
+</select>
+
+<select id="estrela">
+<option value="1">⭐ 1</option>
+<option value="2">⭐⭐ 2</option>
+<option value="3">⭐⭐⭐ 3</option>
+<option value="4">⭐⭐⭐⭐ 4</option>
+<option value="5">⭐⭐⭐⭐⭐ 5</option>
+</select>
+
+<button onclick="addPlayerFirebase()">Adicionar</button>
+</div>
+
+<div class="box">
+<h2>Jogadores</h2>
+<div id="lista"></div>
+</div>
+
+<script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+import {
+getDatabase,
+ref,
+push,
+onValue
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBJmCBbOCIyIBc_H75wmBI9O_iIkiU_9E",
-    authDomain: "galaticos-2283d.firebaseapp.com",
-    projectId: "galaticos-2283d",
-    storageBucket: "galaticos-2283d.firebasestorage.app",
-    messagingSenderId: "485226353231",
-    appId: "1:485226353231:web:b8cde1da83acc27aa9f83a",
-    measurementId: "G-M1MEFKDNLZ"
+apiKey: "AIzaSyBJmCBbOCIyIBc_H75wmBI9O_iIkiU_9E",
+authDomain: "galaticos-2283d.firebaseapp.com",
+databaseURL:"https://galaticos-2283d-default-rtdb.firebaseio.com",
+projectId: "galaticos-2283d",
+storageBucket: "galaticos-2283d.appspot.com",
+messagingSenderId: "485226353231",
+appId: "1:485226353231:web:b8cde1da83acc27aa9f83a"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const playersRef = ref(db, 'jogadores');
+const playersRef = ref(db,"jogadores");
 
-// ✅ estado local corrigido
-let currentLocalPlayers = [];
+// CONTAGEM
+function countdown(){
+let now = new Date();
+let target = new Date();
 
-// -------------------- COUNTDOWN --------------------
-function updateCountdown() {
-    const now = new Date();
-    const target = new Date();
+let day = now.getDay();
+let faltam = (1 - day + 7) % 7;
 
-    const day = now.getDay();
-    const daysUntilMon = (1 - day + 7) % 7;
+target.setDate(now.getDate()+faltam);
+target.setHours(20,0,0,0);
 
-    target.setDate(
-        now.getDate() + (daysUntilMon === 0 && now.getHours() >= 20 ? 7 : daysUntilMon)
-    );
-    target.setHours(20, 0, 0, 0);
-
-    const diff = target - now;
-
-    // ✅ lógica mais precisa
-    const happening = now >= target && now < new Date(target.getTime() + 2 * 60 * 60 * 1000);
-
-    const units = document.getElementById("countdown-units");
-
-    if (happening) {
-        units.innerHTML = `<div style="color:#2ECC71; font-family:'Bebas Neue';">🔥 A ROLAR AGORA!</div>`;
-        return;
-    }
-
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-
-    document.getElementById("cd-d").textContent = String(d).padStart(2,'0');
-    document.getElementById("cd-h").textContent = String(h).padStart(2,'0');
-    document.getElementById("cd-m").textContent = String(m).padStart(2,'0');
-    document.getElementById("cd-s").textContent = String(s).padStart(2,'0');
+if(now > target){
+target.setDate(target.getDate()+7);
 }
 
-setInterval(updateCountdown, 1000);
+let diff = target - now;
 
-// -------------------- SORTEIO --------------------
-window.balancedDraw = (players, n) => {
-    const MAX_PER_TEAM = 5;
+let d = Math.floor(diff/86400000);
+let h = Math.floor(diff%86400000/3600000);
+let m = Math.floor(diff%3600000/60000);
+let s = Math.floor(diff%60000/1000);
 
-    const teams = Array.from({ length: n }, (_, i) => ({
-        name: `Time ${String.fromCharCode(65 + i)}`,
-        players: [],
-        totalQuality: 0
-    }));
+document.getElementById("countdown").innerHTML =
+`${d}d ${h}h ${m}m ${s}s`;
+}
 
-    let pool = [...players].sort((a, b) => b.quality - a.quality);
+setInterval(countdown,1000);
+countdown();
 
-    const goleiros = pool.filter(p => p.position === "Goleiro");
-    const linha = pool.filter(p => p.position !== "Goleiro");
+// ADICIONAR
+window.addPlayerFirebase = function(){
 
-    // ✅ distribui goleiros
-    goleiros.forEach((g, i) => {
-        teams[i % n].players.push(g);
-        teams[i % n].totalQuality += g.quality;
-    });
+let nome = document.getElementById("nome").value;
+let posicao = document.getElementById("posicao").value;
+let quality = document.getElementById("estrela").value;
 
-    // ✅ distribuição mais equilibrada
-    linha.forEach(p => {
-        teams.sort((a, b) => a.totalQuality - b.totalQuality);
+if(nome=="") return alert("Digite nome");
 
-        const team = teams.find(t => t.players.length < MAX_PER_TEAM);
-
-        if (team) {
-            team.players.push(p);
-            team.totalQuality += p.quality;
-        }
-    });
-
-    set(ref(db, 'ultimo_sorteio'), teams);
-
-    return teams;
-};
-
-// -------------------- FIREBASE SYNC --------------------
-onValue(playersRef, (snapshot) => {
-    const data = snapshot.val();
-
-    if (data) {
-        // ✅ converte objeto -> array
-        currentLocalPlayers = Object.values(data);
-        console.log("Jogadores atualizados via Firebase");
-    } else {
-        currentLocalPlayers = [];
-    }
+push(playersRef,{
+nome,
+position:posicao,
+quality:Number(quality)
 });
 
-// -------------------- ADICIONAR JOGADOR --------------------
-window.addPlayerFirebase = (player) => {
-    // ✅ não sobrescreve mais tudo
-    push(playersRef, player);
-};
+document.getElementById("nome").value="";
+}
+
+// LISTAR
+onValue(playersRef,(snapshot)=>{
+
+let data = snapshot.val();
+let html = "";
+
+for(let id in data){
+
+let p = data[id];
+
+html += `
+<div class="player">
+${p.nome} - ${p.position} - ⭐${p.quality}
+</div>
+`;
+}
+
+document.getElementById("lista").innerHTML = html;
+
+});
+
+</script>
+
+</body>
+</html>
