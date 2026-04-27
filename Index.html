@@ -1,13 +1,13 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+  import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-  // Configuração extraída da sua imagem
+  // ✅ Configuração corrigida
   const firebaseConfig = {
     apiKey: "AIzaSyBJmCBbOCIyIBc_H75wmBI9O_iIkiU_9E",
     authDomain: "galaticos-2283d.firebaseapp.com",
     projectId: "galaticos-2283d",
-    storageBucket: "galaticos-2283d.firebasestorage.app",
+    storageBucket: "galaticos-2283d.appspot.com", // corrigido
     messagingSenderId: "485226353231",
     appId: "1:485226353231:web:b8cde1da83acc27aa9f83a",
     measurementId: "G-M1MEFKDNLZ"
@@ -17,13 +17,15 @@
   const db = getDatabase(app);
   const playersRef = ref(db, 'jogadores');
 
-  // --- LÓGICA DO COUNTDOWN (SEGUNDA 20:00) ---
+  let currentLocalPlayers = []; // ✅ inicializado
+
+  // --- COUNTDOWN (Segunda 20:00) ---
   function updateCountdown() {
     const now = new Date();
     const target = new Date();
     const day = now.getDay();
-    const daysUntilMon = (1 - day + 7) % 7;
-    
+    const daysUntilMon = (8 - day) % 7;
+
     target.setDate(now.getDate() + (daysUntilMon === 0 && now.getHours() >= 20 ? 7 : daysUntilMon));
     target.setHours(20, 0, 0, 0);
 
@@ -49,7 +51,7 @@
   }
   setInterval(updateCountdown, 1000);
 
-  // --- LÓGICA DE SORTEIO (4 LINHA + 1 GOL) ---
+  // --- SORTEIO BALANCEADO ---
   window.balancedDraw = (players, n) => {
     const MAX_PER_TEAM = 5; // 4 linha + 1 goleiro
     const teams = Array.from({ length: n }, (_, i) => ({
@@ -59,8 +61,7 @@
     }));
 
     let pool = [...players].sort((a, b) => b.quality - a.quality);
-    
-    // Distribui Goleiros primeiro
+
     const goleiros = pool.filter(p => p.position === "Goleiro");
     const linha = pool.filter(p => p.position !== "Goleiro");
 
@@ -71,7 +72,7 @@
       }
     });
 
-    // Snake Draft para os jogadores de linha
+    // Snake Draft
     let currentTeam = 0;
     let direction = 1;
 
@@ -91,8 +92,8 @@
       }
     });
 
-    // Salva o resultado do sorteio no Firebase
-    set(ref(db, 'ultimo_sorteio'), teams);
+    // ✅ Usar push para histórico
+    push(ref(db, 'sorteios'), teams);
     return teams;
   };
 
@@ -100,12 +101,12 @@
   onValue(playersRef, (snapshot) => {
     const data = snapshot.val();
     if (data) {
-      // Aqui você atualiza o estado global do seu app
+      currentLocalPlayers = data; // ✅ mantém sincronizado
       console.log("Jogadores atualizados via Firebase");
     }
   });
 
-  // Função global para adicionar jogador
+  // --- Adicionar jogador ---
   window.addPlayerFirebase = (player) => {
     const newPlayers = [...currentLocalPlayers, player];
     set(playersRef, newPlayers);
