@@ -2,61 +2,51 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚽ Baba dos Galáticos PRO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>⚽ Baba dos Galáticos Firebase</title>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 body{
 font-family:Arial,sans-serif;
 background:#06111f;
-color:white;
+color:#fff;
+padding:20px;
 }
 
 header{
 background:linear-gradient(90deg,#f1c40f,#ffd700);
-padding:25px;
+padding:20px;
 text-align:center;
-font-size:32px;
+font-size:28px;
 font-weight:bold;
 color:#000;
-box-shadow:0 4px 10px rgba(0,0,0,.3);
+border-radius:16px;
+margin-bottom:20px;
 }
 
 .container{
 max-width:1100px;
 margin:auto;
-padding:20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:20px;
 }
 
 .card{
 background:#0f172a;
 padding:20px;
 border-radius:18px;
-margin-bottom:20px;
-box-shadow:0 10px 20px rgba(0,0,0,.25);
 border:1px solid #22304d;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:18px;
 }
 
 h2{
 color:#ffd700;
 margin-bottom:15px;
-}
-
-p{
-line-height:1.6;
-color:#d1d5db;
 }
 
 input,select,button{
@@ -70,293 +60,220 @@ font-size:16px;
 
 input,select{
 background:#1f2937;
-color:white;
+color:#fff;
 }
 
 button{
 background:#2563eb;
-color:white;
+color:#fff;
 font-weight:bold;
 cursor:pointer;
-transition:0.3s;
 }
 
-button:hover{
-transform:scale(1.03);
-opacity:.95;
+.admin{
+background:#dc2626;
 }
 
-.hero{
-text-align:center;
-padding:30px;
+.gold{
+background:#f1c40f;
+color:#000;
 }
 
-.pill{
-display:inline-block;
-padding:8px 14px;
-background:#1e293b;
-border-radius:999px;
-margin:5px;
-font-size:14px;
-}
-
-.player,.linha{
+.player{
 background:#1f2937;
 padding:10px;
 border-radius:10px;
 margin-top:8px;
-}
-
-.player{
 display:flex;
 justify-content:space-between;
-}
-
-.team{
-background:#1f2937;
-padding:15px;
-border-radius:14px;
-margin-top:15px;
-}
-
-.gol{
-background:#f39c12;
-color:#000;
-font-weight:bold;
-}
-
-.stats{
-font-size:36px;
-font-weight:bold;
-color:#ffd700;
-}
-
-footer{
-text-align:center;
-padding:25px;
-color:#94a3b8;
 }
 </style>
 </head>
 
 <body>
 
-<header>⚽ BABA DOS GALÁTICOS PRO</header>
+<header>⚽ BABA DOS GALÁTICOS ONLINE</header>
 
 <div class="container">
 
-<!-- HERO -->
-<div class="card hero">
-<h2>🔥 O melhor app para organizar seu baba</h2>
-<p>Inscrição online • Sorteio equilibrado • Ranking • Campeões • Estatísticas</p>
-
-<div>
-<span class="pill">⚽ 4 Linha + 1 Gol</span>
-<span class="pill">🤖 IA de Balanceamento</span>
-<span class="pill">🏆 Hall da Fama</span>
-</div>
-</div>
-
-<!-- ESTATÍSTICAS -->
 <div class="grid">
-
-<div class="card">
-<div class="stats" id="totalJogadores">0</div>
-<p>Jogadores cadastrados</p>
-</div>
-
-<div class="card">
-<div class="stats">143</div>
-<p>Partidas jogadas</p>
-</div>
-
-<div class="card">
-<div class="stats">12</div>
-<p>Campeões diferentes</p>
-</div>
-
-</div>
 
 <!-- INSCRIÇÃO -->
 <div class="card">
-<h2>📝 Entrar no Baba</h2>
+<h2>📝 Inscrição</h2>
 
-<input type="text" id="nomeInscricao" placeholder="Digite seu nome">
+<input type="text" id="nome" placeholder="Seu nome">
 
-<select id="posicaoInscricao">
+<select id="posicao">
 <option>Linha</option>
 <option>Goleiro</option>
 </select>
 
-<button onclick="inscrever()">Confirmar Inscrição</button>
+<button onclick="inscrever()">Entrar no Baba</button>
 </div>
 
-<!-- LISTA -->
+<!-- ADM -->
 <div class="card">
-<h2>📋 Confirmados</h2>
+<h2>👑 ADM</h2>
+
+<button class="admin" onclick="loginADM()">Entrar</button>
+
+<div id="painelADM" style="display:none;">
+
+<input type="text" id="nomeADM" placeholder="Nome jogador">
+
+<select id="notaADM">
+<option value="1">⭐1</option>
+<option value="2">⭐2</option>
+<option value="3">⭐3</option>
+<option value="4">⭐4</option>
+<option value="5">⭐5</option>
+</select>
+
+<button class="gold" onclick="editarNota()">Salvar Estrelas</button>
+
+<button onclick="limpar()">🗑️ Limpar Lista</button>
+
+</div>
+</div>
+
+</div>
+
+<div class="card" style="margin-top:20px;">
+<h2>📋 Lista Ao Vivo</h2>
 <div id="lista"></div>
 </div>
 
-<!-- SORTEIO -->
-<div class="card">
-<h2>⚽ Sorteio Inteligente</h2>
-
-<select id="times">
-<option value="2">2 Times</option>
-<option value="3">3 Times</option>
-<option value="4">4 Times</option>
-</select>
-
-<button onclick="sortear()">Sortear Agora</button>
-
-<div id="resultado"></div>
 </div>
 
-<!-- HALL DA FAMA -->
-<div class="card">
-<h2>🏆 Hall da Fama</h2>
-<p>Último campeão: <b>Galáticos FC</b></p>
-<p>MVP: <b>Ney Bala</b></p>
-<p>Artilheiro: <b>Juninho 24 gols</b></p>
-</div>
+<!-- FIREBASE -->
+<script type="module">
 
-</div>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-<footer>
-Baba dos Galáticos © 2026
-</footer>
+import {
+getFirestore,
+collection,
+addDoc,
+onSnapshot,
+query,
+deleteDoc,
+doc,
+getDocs,
+updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<script>
 
-let jogadores = JSON.parse(localStorage.getItem("galaticos")) || [];
+// COLE AQUI O MESMO FIREBASE ANTERIOR
+const firebaseConfig = {
+apiKey: "SUA_KEY",
+authDomain: "SEU_DOMINIO",
+projectId: "SEU_PROJECT_ID",
+storageBucket: "SEU_BUCKET",
+messagingSenderId: "SEU_ID",
+appId: "SEU_APP_ID"
+};
 
-// salvar
-function salvar(){
-localStorage.setItem("galaticos", JSON.stringify(jogadores));
-render();
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const lista = document.getElementById("lista");
 
 // inscrição
-function inscrever(){
+window.inscrever = async function(){
 
-let nome = document.getElementById("nomeInscricao").value.trim();
-let pos = document.getElementById("posicaoInscricao").value;
+let nome = document.getElementById("nome").value.trim();
+let pos = document.getElementById("posicao").value;
 
 if(nome==""){
-alert("Digite seu nome.");
+alert("Digite nome");
 return;
 }
 
-let existe = jogadores.find(j => j.nome.toLowerCase() == nome.toLowerCase());
-
-if(existe){
-alert("Você já está inscrito.");
-return;
-}
-
-jogadores.push({
+await addDoc(collection(db,"jogadores"),{
 nome:nome,
 pos:pos,
 nota:3
 });
 
-document.getElementById("nomeInscricao").value="";
+document.getElementById("nome").value="";
 
-salvar();
+alert("Inscrição feita!");
 
-alert("Inscrição confirmada!");
 }
 
-// render lista
-function render(){
+// lista ao vivo
+onSnapshot(query(collection(db,"jogadores")), (snapshot)=>{
 
 let html="";
 
-if(jogadores.length==0){
-html="<p>Ninguém confirmado ainda.</p>";
-}
+snapshot.forEach((docu)=>{
 
-jogadores.forEach((j,i)=>{
+let j = docu.data();
 
 html += `
 <div class="player">
-<span>${i+1}. ${j.nome} - ${j.pos}</span>
+<span>${j.nome} - ${j.pos}</span>
 <span>⭐${j.nota}</span>
 </div>
 `;
 
 });
 
-document.getElementById("lista").innerHTML = html;
-document.getElementById("totalJogadores").innerText = jogadores.length;
+lista.innerHTML = html;
+
+});
+
+// login adm
+window.loginADM = function(){
+
+let senha = prompt("Senha ADM:");
+
+if(senha=="1234"){
+document.getElementById("painelADM").style.display="block";
+}else{
+alert("Senha errada");
 }
 
-render();
-
-// sorteio
-function sortear(){
-
-let qtd = Number(document.getElementById("times").value);
-
-let goleiros = jogadores.filter(j=>j.pos=="Goleiro");
-let linha = jogadores.filter(j=>j.pos=="Linha");
-
-let times=[];
-
-for(let i=0;i<qtd;i++){
-times.push({
-nome:"Galáticos "+String.fromCharCode(65+i),
-goleiro:null,
-linha:[]
-});
 }
 
-// goleiros
-goleiros.forEach((g,i)=>{
-if(i<qtd) times[i].goleiro=g;
+// editar estrelas
+window.editarNota = async function(){
+
+let nome = document.getElementById("nomeADM").value.trim();
+let nota = Number(document.getElementById("notaADM").value);
+
+const snap = await getDocs(collection(db,"jogadores"));
+
+snap.forEach(async(item)=>{
+
+let dados = item.data();
+
+if(dados.nome.toLowerCase()==nome.toLowerCase()){
+
+await updateDoc(doc(db,"jogadores",item.id),{
+nota:nota
 });
 
-// linha
-let index=0;
-
-linha.forEach(j=>{
-
-times[index].linha.push(j);
-
-index++;
-if(index>=qtd) index=0;
-
-});
-
-// mostrar
-let html="";
-
-times.forEach(t=>{
-
-html+=`
-<div class="team">
-<h3>${t.nome}</h3>
-
-<div class="linha gol">
-🥅 ${t.goleiro ? t.goleiro.nome : "Sem goleiro"}
-</div>
-`;
-
-t.linha.forEach((j,n)=>{
-
-html+=`
-<div class="linha">
-👟 Linha ${n+1}: ${j.nome}
-</div>
-`;
+}
 
 });
 
-html+=`</div>`;
+alert("Atualizado!");
 
+}
+
+// limpar lista
+window.limpar = async function(){
+
+if(!confirm("Apagar tudo?")) return;
+
+const snap = await getDocs(collection(db,"jogadores"));
+
+snap.forEach(async(item)=>{
+await deleteDoc(doc(db,"jogadores",item.id));
 });
 
-document.getElementById("resultado").innerHTML=html;
 }
 
 </script>
