@@ -1,42 +1,46 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-  // ✅ Configuração corrigida
-  const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyBJmCBbOCIyIBc_H75wmBI9O_iIkiU_9E",
     authDomain: "galaticos-2283d.firebaseapp.com",
     projectId: "galaticos-2283d",
-    storageBucket: "galaticos-2283d.appspot.com", // corrigido
+    storageBucket: "galaticos-2283d.firebasestorage.app",
     messagingSenderId: "485226353231",
     appId: "1:485226353231:web:b8cde1da83acc27aa9f83a",
     measurementId: "G-M1MEFKDNLZ"
-  };
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const playersRef = ref(db, 'jogadores');
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const playersRef = ref(db, 'jogadores');
 
-  let currentLocalPlayers = []; // ✅ inicializado
+// ✅ estado local corrigido
+let currentLocalPlayers = [];
 
-  // --- COUNTDOWN (Segunda 20:00) ---
-  function updateCountdown() {
+// -------------------- COUNTDOWN --------------------
+function updateCountdown() {
     const now = new Date();
     const target = new Date();
-    const day = now.getDay();
-    const daysUntilMon = (8 - day) % 7;
 
-    target.setDate(now.getDate() + (daysUntilMon === 0 && now.getHours() >= 20 ? 7 : daysUntilMon));
+    const day = now.getDay();
+    const daysUntilMon = (1 - day + 7) % 7;
+
+    target.setDate(
+        now.getDate() + (daysUntilMon === 0 && now.getHours() >= 20 ? 7 : daysUntilMon)
+    );
     target.setHours(20, 0, 0, 0);
 
     const diff = target - now;
-    const isMon = now.getDay() === 1;
-    const happening = isMon && now.getHours() >= 20 && now.getHours() < 22;
+
+    // ✅ lógica mais precisa
+    const happening = now >= target && now < new Date(target.getTime() + 2 * 60 * 60 * 1000);
 
     const units = document.getElementById("countdown-units");
+
     if (happening) {
-      units.innerHTML = `<div style="color:#2ECC71; font-family:'Bebas Neue';">🔥 A ROLAR AGORA!</div>`;
-      return;
+        units.innerHTML = `<div style="color:#2ECC71; font-family:'Bebas Neue';">🔥 A ROLAR AGORA!</div>`;
+        return;
     }
 
     const d = Math.floor(diff / 86400000);
@@ -48,16 +52,18 @@
     document.getElementById("cd-h").textContent = String(h).padStart(2,'0');
     document.getElementById("cd-m").textContent = String(m).padStart(2,'0');
     document.getElementById("cd-s").textContent = String(s).padStart(2,'0');
-  }
-  setInterval(updateCountdown, 1000);
+}
 
-  // --- SORTEIO BALANCEADO ---
-  window.balancedDraw = (players, n) => {
-    const MAX_PER_TEAM = 5; // 4 linha + 1 goleiro
+setInterval(updateCountdown, 1000);
+
+// -------------------- SORTEIO --------------------
+window.balancedDraw = (players, n) => {
+    const MAX_PER_TEAM = 5;
+
     const teams = Array.from({ length: n }, (_, i) => ({
-      name: `Time ${String.fromCharCode(65 + i)}`,
-      players: [],
-      totalQuality: 0
+        name: `Time ${String.fromCharCode(65 + i)}`,
+        players: [],
+        totalQuality: 0
     }));
 
     let pool = [...players].sort((a, b) => b.quality - a.quality);
@@ -65,50 +71,44 @@
     const goleiros = pool.filter(p => p.position === "Goleiro");
     const linha = pool.filter(p => p.position !== "Goleiro");
 
+    // ✅ distribui goleiros
     goleiros.forEach((g, i) => {
-      if (teams[i % n]) {
         teams[i % n].players.push(g);
         teams[i % n].totalQuality += g.quality;
-      }
     });
 
-    // Snake Draft
-    let currentTeam = 0;
-    let direction = 1;
-
+    // ✅ distribuição mais equilibrada
     linha.forEach(p => {
-      let assigned = false;
-      let attempts = 0;
-      while (!assigned && attempts < n) {
-        if (teams[currentTeam].players.length < MAX_PER_TEAM) {
-          teams[currentTeam].players.push(p);
-          teams[currentTeam].totalQuality += p.quality;
-          assigned = true;
+        teams.sort((a, b) => a.totalQuality - b.totalQuality);
+
+        const team = teams.find(t => t.players.length < MAX_PER_TEAM);
+
+        if (team) {
+            team.players.push(p);
+            team.totalQuality += p.quality;
         }
-        currentTeam += direction;
-        if (currentTeam >= n) { currentTeam = n - 1; direction = -1; }
-        else if (currentTeam < 0) { currentTeam = 0; direction = 1; }
-        attempts++;
-      }
     });
 
-    // ✅ Usar push para histórico
-    push(ref(db, 'sorteios'), teams);
+    set(ref(db, 'ultimo_sorteio'), teams);
+
     return teams;
-  };
+};
 
-  // --- SINCRONIZAÇÃO EM TEMPO REAL ---
-  onValue(playersRef, (snapshot) => {
+// -------------------- FIREBASE SYNC --------------------
+onValue(playersRef, (snapshot) => {
     const data = snapshot.val();
-    if (data) {
-      currentLocalPlayers = data; // ✅ mantém sincronizado
-      console.log("Jogadores atualizados via Firebase");
-    }
-  });
 
-  // --- Adicionar jogador ---
-  window.addPlayerFirebase = (player) => {
-    const newPlayers = [...currentLocalPlayers, player];
-    set(playersRef, newPlayers);
-  };
-</script>
+    if (data) {
+        // ✅ converte objeto -> array
+        currentLocalPlayers = Object.values(data);
+        console.log("Jogadores atualizados via Firebase");
+    } else {
+        currentLocalPlayers = [];
+    }
+});
+
+// -------------------- ADICIONAR JOGADOR --------------------
+window.addPlayerFirebase = (player) => {
+    // ✅ não sobrescreve mais tudo
+    push(playersRef, player);
+};
