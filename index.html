@@ -12,6 +12,28 @@
   <title>Baba dos Galáticos ⭐</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, onValue, set, push, update, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBJMmC8I6cly10k_1f5maBI90_i1kiu_9E",
+      authDomain: "galaticos-2283d.firebaseapp.com",
+      projectId: "galaticos-2283d",
+      storageBucket: "galaticos-2283d.firebasestorage.app",
+      messagingSenderId: "495226353231",
+      appId: "1:495226353231:web:49c097a678360a79a97b03a",
+      measurementId: "6-68B57YB7YH"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const playersRefDB = ref(database, 'jogadores');
+    
+    window.db = { database, playersRefDB, ref, onValue, set, push, update, remove };
+  </script>
+
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body{background:radial-gradient(ellipse at 20% 0%,#0d1b3e,#080c1a 55%);color:#fff;font-family:'Syne',sans-serif;min-height:100vh;padding-bottom:60px}
@@ -49,7 +71,6 @@
     .num-btns{display:flex;gap:8px;margin-bottom:14px}
     .num-btn{padding:8px 20px;border-radius:10px;border:2px solid #ffffff18;background:#ffffff08;color:#666;font-family:'Bebas Neue',sans-serif;font-size:22px;cursor:pointer;transition:all 0.15s;-webkit-appearance:none}
     .num-btn.active{border-color:#FFD700;background:#FFD70022;color:#FFD700}
-    .selection-info{display:flex;align-items:center;justify-content:space-between;background:#FFD7000d;border:1px solid #FFD70022;border-radius:10px;padding:10px 14px;margin-bottom:10px}
     .draw-btn{width:100%;padding:16px;border-radius:14px;border:none;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;margin-bottom:24px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;-webkit-appearance:none}
     .draw-btn.ready{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#fff;box-shadow:0 6px 30px #FFD70044}
     .draw-btn.disabled{background:#ffffff0d;color:#444;cursor:not-allowed}
@@ -62,13 +83,21 @@
     .team-card{background:linear-gradient(145deg,#14142a,#1a1a34);border:2px solid var(--tc);border-radius:16px;overflow:hidden}
     .reshuffle-btn{width:100%;padding:12px;border-radius:12px;border:1px solid #ffffff18;background:#ffffff08;color:#aaa;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;-webkit-appearance:none}
     .overlay{position:fixed;inset:0;background:#000c;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px}
-    .modal{background:linear-gradient(145deg,#1a1a2e,#12122a);border:1px solid #ffffff18;border-radius:20px;padding:26px 22px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
+    .modal{background:linear-gradient(145deg,#1a1a2e,#12122a);border:1px solid #ffffff18;border-radius:20px;padding:26px 22px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
     .modal-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:#fff;margin-bottom:20px}
     .field{margin-bottom:14px}
     .field label{display:block;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
     .field input{width:100%;background:#ffffff0d;border:1px solid #ffffff18;border-radius:10px;padding:10px 14px;color:#fff;font-size:14px;outline:none}
     .pos-btns{display:flex;gap:7px;flex-wrap:wrap}
     .pos-btn{padding:7px 12px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;transition:all 0.15s;-webkit-appearance:none}
+    .attr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+    .attr-item{background:#ffffff05;border-radius:10px;padding:10px}
+    .attr-header{display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase}
+    .attr-slider{width:100%;height:4px;-webkit-appearance:none;background:#ffffff1a;border-radius:2px;outline:none}
+    .attr-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#FFD700;cursor:pointer;box-shadow:0 0 8px #FFD700}
+    .attr-value{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#FFD700}
+    .overall-badge{background:linear-gradient(135deg,#FFD700,#FF8C00);border-radius:20px;padding:8px 16px;text-align:center;margin-bottom:16px}
+    .overall-number{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:#fff}
     .modal-actions{display:flex;gap:10px;margin-top:22px}
     .cancel-btn{flex:1;padding:11px;border-radius:10px;border:1px solid #ffffff18;background:#ffffff0d;color:#666;font-weight:700;font-size:14px;cursor:pointer;-webkit-appearance:none}
     .save-btn{flex:2;padding:11px;border-radius:10px;border:none;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;cursor:pointer;-webkit-appearance:none}
@@ -76,7 +105,9 @@
     .big-spinner{width:36px;height:36px;border:4px solid #ffffff0d;border-top-color:#FFD700;border-radius:50%;animation:spin 0.8s linear infinite}
     .empty{text-align:center;padding:60px 20px;color:#444}
     .pending-badge{font-size:9px;background:#FFD70020;color:#FFD700;border-radius:4px;padding:2px 8px;font-weight:700;letter-spacing:0.5px}
-    .live-dot{width:7px;height:7px;border-radius:50%;background:#2ECC71;animation:pulse 1.5s infinite;display:inline-block;margin-right:4px}
+    .stats-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+    .stat-pill{background:#ffffff0a;border-radius:4px;padding:2px 6px;font-size:9px;color:#aaa}
+    .stat-pill strong{color:#FFD700}
   </style>
 </head>
 <body>
@@ -86,39 +117,25 @@
   <div style="font-size:13px;color:#666;letter-spacing:1px;margin-bottom:40px">Futsal de elite ⭐</div>
 
   <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
-    <!-- JOGADOR -->
     <div style="background:linear-gradient(145deg,#1a1a2e,#131325);border:1px solid #ffffff14;border-radius:20px;padding:22px 20px">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#fff;margin-bottom:14px">👤 SOU JOGADOR</div>
       <input id="login-name" placeholder="Digite seu nome" maxlength="30" autocomplete="off" autocorrect="off" spellcheck="false"
         style="width:100%;background:#ffffff0d;border:1.5px solid #ffffff18;border-radius:10px;padding:12px 14px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;outline:none;margin-bottom:10px;box-sizing:border-box"/>
       <div id="pos-grid-login" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <div data-pos="Goleiro" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s">
-          <div style="font-size:22px">🧤</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Goleiro</div>
-        </div>
-        <div data-pos="Fixo" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s">
-          <div style="font-size:22px">🛡️</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Fixo</div>
-        </div>
-        <div data-pos="Ala" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s">
-          <div style="font-size:22px">⚡</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Ala</div>
-        </div>
-        <div data-pos="Pivô" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s">
-          <div style="font-size:22px">🎯</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Pivô</div>
-        </div>
+        <div data-pos="Goleiro" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s"><div style="font-size:22px">🧤</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Goleiro</div></div>
+        <div data-pos="Fixo" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s"><div style="font-size:22px">🛡️</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Fixo</div></div>
+        <div data-pos="Ala" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s"><div style="font-size:22px">⚡</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Ala</div></div>
+        <div data-pos="Pivô" style="padding:12px 8px;border-radius:12px;border:2px solid #ffffff12;background:#ffffff07;cursor:pointer;text-align:center;transition:all 0.2s"><div style="font-size:22px">🎯</div><div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#aaa;letter-spacing:1px">Pivô</div></div>
       </div>
-      <div id="login-error" style="display:none;background:#ff444415;border:1px solid #ff444440;border-radius:8px;padding:10px 12px;font-size:12px;color:#ff6666;margin-bottom:10px">
-        🚫 Nome não encontrado. Verifique com o ADM.
-      </div>
+      <div id="login-error" style="display:none;background:#ff444415;border:1px solid #ff444440;border-radius:8px;padding:10px 12px;font-size:12px;color:#ff6666;margin-bottom:10px">🚫 Nome não encontrado. Verifique com o ADM.</div>
       <button id="login-player-btn" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#FFD700,#FF8C00);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;-webkit-appearance:none">CONFIRMAR PRESENÇA</button>
     </div>
 
-    <!-- ADM -->
     <div style="background:#ffffff08;border:1px solid #ffffff0f;border-radius:20px;padding:18px 20px">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#fff;margin-bottom:12px">🔐 SOU ADM</div>
       <input id="adm-password" type="password" placeholder="Senha do ADM"
         style="width:100%;background:#ffffff0d;border:1.5px solid #ffffff18;border-radius:10px;padding:12px 14px;color:#fff;font-family:'Syne',sans-serif;font-size:16px;outline:none;margin-bottom:10px;box-sizing:border-box"/>
-      <div id="adm-error" style="display:none;background:#ff444415;border:1px solid #ff444440;border-radius:8px;padding:10px 12px;font-size:12px;color:#ff6666;margin-bottom:10px">
-        🚫 Senha incorreta!
-      </div>
+      <div id="adm-error" style="display:none;background:#ff444415;border:1px solid #ff444440;border-radius:8px;padding:10px 12px;font-size:12px;color:#ff6666;margin-bottom:10px">🚫 Senha incorreta!</div>
       <button id="login-adm-btn" style="width:100%;padding:14px;border-radius:12px;border:none;background:#ffffff10;border:1px solid #ffffff20;color:#aaa;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;-webkit-appearance:none">ENTRAR COMO ADM</button>
     </div>
   </div>
@@ -129,32 +146,28 @@
   <div id="success-player-name" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#FFD700;margin-bottom:8px"></div>
   <div style="font-size:14px;color:#888;line-height:1.6;margin-bottom:20px">Você está na lista do baba!</div>
   <div style="background:#ffffff08;border-radius:12px;padding:14px 20px;font-size:12px;color:#666;line-height:1.6;max-width:320px">
-    <strong style="color:#FFD700;display:block;margin-bottom:4px">⏳ Aguardando nota</strong>
-    O ADM vai avaliar sua habilidade antes do sorteio.
+    <strong style="color:#FFD700;display:block;margin-bottom:4px">⏳ Aguardando avaliação</strong>
+    O ADM vai avaliar seus atributos antes do sorteio.
   </div>
 </div>
 
 <div id="app"><div class="loading-screen"><div class="big-spinner"></div><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#555">CARREGANDO...</div></div></div>
 
-<script>
-// ── STORAGE (localStorage) ────────────────────────────────────────────────────
-const LS_KEY = "baba_galaticos_jogadores";
-function lsLoad(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"{}"); }catch(e){ return {}; } }
-function lsSave(data){ try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); }catch(e){} }
+<script type="module">
+import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-const playersRef = {
-  _listeners: [],
-  _notify(){ const data=lsLoad(); this._listeners.forEach(cb=>cb(data)); },
-  on(evt,cb){ this._listeners.push(cb); cb(lsLoad()); },
-  child(id){ return {
-    update(val){ const d=lsLoad(); d[id]={...(d[id]||{}),...val}; lsSave(d); playersRef._notify(); },
-    remove(){ const d=lsLoad(); delete d[id]; lsSave(d); playersRef._notify(); }
-  }; },
-  push(val){ const id="p_"+Date.now()+"_"+Math.random().toString(36).slice(2,7); const d=lsLoad(); d[id]={...val,id}; lsSave(d); playersRef._notify(); },
-  once(evt){ return Promise.resolve(lsLoad()); }
-};
+const db = window.db.database;
+const playersRefDB = window.db.playersRefDB;
 
-// ── POSIÇÕES DE FUTSAL ────────────────────────────────────────────────────────
+// Atributos disponíveis
+const ATTRIBUTES = [
+  { id: "velocidade", name: "⚡ Velocidade", icon: "⚡", max: 10 },
+  { id: "drible", name: "🪄 Drible", icon: "🪄", max: 10 },
+  { id: "chute", name: "🎯 Chute", icon: "🎯", max: 10 },
+  { id: "passe", name: "🔄 Passe", icon: "🔄", max: 10 },
+  { id: "defesa", name: "🛡️ Defesa", icon: "🛡️", max: 10 }
+];
+
 const POSITIONS = ["Goleiro","Fixo","Ala","Pivô"];
 const POS_COLORS = {
   "Goleiro": {bg:"#FF6B35", glow:"#FF6B3530"},
@@ -163,7 +176,7 @@ const POS_COLORS = {
   "Pivô":    {bg:"#2ECC71", glow:"#2ECC7130"}
 };
 
-const QUALITY_LABELS = {1:"Fraco",2:"Regular",3:"Bom",4:"Ótimo",5:"Elite"};
+const QUALITY_LABELS = {1:"⭐ Iniciante",2:"⭐⭐ Regular",3:"⭐⭐⭐ Bom",4:"⭐⭐⭐⭐ Ótimo",5:"⭐⭐⭐⭐⭐ Elite"};
 const TEAM_THEMES = [
   {name:"Galácticos A",color:"#FF4444",emoji:"⭐"},
   {name:"Galácticos B",color:"#4488FF",emoji:"⭐"},
@@ -171,10 +184,16 @@ const TEAM_THEMES = [
   {name:"Galácticos D",color:"#FFB800",emoji:"⭐"}
 ];
 
-// Times de 5 jogadores no futsal
 const PLAYERS_PER_TEAM = 5;
-
 let state = {tab:"jogadores",players:[],loading:true,modal:null,filterPos:"Todos",numTeams:2,selected:new Set(),drawn:null,drawing:false};
+
+// Calcula overall baseado nos atributos
+function calculateOverall(attrs) {
+  if(!attrs) return 0;
+  const values = ATTRIBUTES.map(a => attrs[a.id] || 0);
+  const sum = values.reduce((a,b) => a + b, 0);
+  return Math.round(sum / ATTRIBUTES.length);
+}
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
@@ -187,7 +206,7 @@ function snakeDraft(sorted, teams) {
     for(let step=0;step<n&&idx<sorted.length;step++){
       const t=teams[start+step*dir];
       t.players.push(sorted[idx]);
-      t.total+=sorted[idx].quality||0;
+      t.total += sorted[idx].overall || 0;
       idx++;
     }
     round++;
@@ -200,48 +219,46 @@ function balancedDraw(players, n) {
   POSITIONS.forEach(pos=>{byPos[pos]=[];});
   players.forEach(p=>{(byPos[p.position]||(byPos["Outros"]=byPos["Outros"]||[])).push(p);});
 
-  function sortByQuality(arr){
-    const g={};
-    arr.forEach(p=>{if(!g[p.quality])g[p.quality]=[];g[p.quality].push(p);});
-    Object.keys(g).forEach(q=>{g[q]=shuffle(g[q]);});
-    return [5,4,3,2,1].flatMap(q=>g[q]||[]);
+  function sortByOverall(arr){
+    return [...arr].sort((a,b) => (b.overall||0) - (a.overall||0));
   }
 
-  // 1º — Goleiros (1 por time idealmente)
-  snakeDraft(sortByQuality(byPos["Goleiro"]||[]), teams);
-  // 2º — Fixos (defesa do futsal)
-  snakeDraft(sortByQuality(byPos["Fixo"]||[]), teams);
-  // 3º — Alas + Pivôs + outros
-  snakeDraft(sortByQuality([
-    ...(byPos["Ala"]||[]),
-    ...(byPos["Pivô"]||[]),
-    ...(byPos["Outros"]||[])
-  ]), teams);
-
+  snakeDraft(sortByOverall(byPos["Goleiro"]||[]), teams);
+  snakeDraft(sortByOverall(byPos["Fixo"]||[]), teams);
+  snakeDraft(sortByOverall([...(byPos["Ala"]||[]), ...(byPos["Pivô"]||[]), ...(byPos["Outros"]||[])]), teams);
   return teams;
 }
 
 function posColor(pos){return POS_COLORS[pos]||{bg:"#888",glow:"#88888830"};}
-function stars(val){return[1,2,3,4,5].map(s=>`<span style="font-size:16px;color:${s<=(val||0)?'#FFD700':'#2a2a3a'};text-shadow:${s<=(val||0)?'0 0 8px #FFD70099':'none'}">★</span>`).join('');}
+function stars(val){return[1,2,3,4,5].map(s=>`<span style="font-size:14px;color:${s<=(val||0)?'#FFD700':'#2a2a3a'}">★</span>`).join('');}
 
 function playerCardHTML(p,selectable=false){
   const c=posColor(p.position);const sel=selectable&&state.selected.has(p.id);
-  const pending=!p.quality||p.quality===0;
-  const starsHTML=pending
-    ?`<div style="margin-top:4px"><span class="pending-badge">⏳ SEM NOTA</span></div>`
-    :`<div style="display:flex;align-items:center;gap:6px;margin-top:3px">${stars(p.quality)}<span class="quality-label">${QUALITY_LABELS[p.quality]}</span></div>`;
-  return `<div class="player-card ${sel?'selected':''}" style="--col:${c.bg};--glow:${c.glow};--border:${sel?c.bg:pending?'#FFD70040':c.bg+'35'};cursor:${selectable?'pointer':'default'}" data-action="${selectable?'toggle':''}" data-id="${p.id}">
+  const overall = p.overall || calculateOverall(p.attributes);
+  const overallStars = Math.floor(overall / 2);
+  
+  let statsHTML = `<div class="stats-row">`;
+  if(p.attributes) {
+    const attrs = ATTRIBUTES.map(a => `<span class="stat-pill"><strong>${a.icon}</strong> ${p.attributes[a.id]||0}</span>`);
+    statsHTML += attrs.slice(0,3).join('');
+    statsHTML += `<span class="stat-pill"><strong>⭐</strong> ${overall}</span>`;
+  } else {
+    statsHTML += `<span class="stat-pill pending-badge">⏳ SEM ATRIBUTOS</span>`;
+  }
+  statsHTML += `</div>`;
+
+  return `<div class="player-card ${sel?'selected':''}" style="--col:${c.bg};--glow:${c.glow};--border:${sel?c.bg:'#ffffff30'};cursor:${selectable?'pointer':'default'}" data-action="${selectable?'toggle':''}" data-id="${p.id}">
     ${selectable?`<div class="check-circle ${sel?'on':''}" style="--col:${c.bg}">${sel?'✓':''}</div>`:''}
     <div class="player-avatar" style="--col:${c.bg};--glow:${c.glow}">${p.name.charAt(0)}</div>
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
         <span class="player-name">${p.name}</span>
         <span class="pos-badge" style="background:${c.bg}">${p.position}</span>
+        <span class="quality-label">${stars(overallStars)}</span>
       </div>
-      ${starsHTML}
+      ${statsHTML}
     </div>
     ${!selectable?`<div style="display:flex;gap:5px;flex-shrink:0">
-      ${pending?`<button style="background:#FFD70020;border:1px solid #FFD70040;border-radius:7px;color:#FFD700;cursor:pointer;font-size:11px;padding:5px 9px;font-weight:700;white-space:nowrap;-webkit-appearance:none" data-action="edit" data-id="${p.id}">⭐ AVALIAR</button>`:''}
       <button class="edit-btn" data-action="edit" data-id="${p.id}">✏️</button>
       <button class="del-btn" data-action="delete" data-id="${p.id}">🗑</button>
     </div>`:''}
@@ -250,25 +267,37 @@ function playerCardHTML(p,selectable=false){
 
 function modalHTML(){
   const p=state.modal;const pos=p?.position||"Goleiro";const c=posColor(pos);
-  // Emojis para posições de futsal
-  const posEmojis={"Goleiro":"🧤","Fixo":"🛡️","Ala":"⚡","Pivô":"🎯"};
+  const attrs = p?.attributes || {velocidade:5,drible:5,chute:5,passe:5,defesa:5};
+  const overall = calculateOverall(attrs);
+  
   return `<div class="overlay" id="modal-overlay">
     <div class="modal">
-      <div class="modal-title">${p?.id?'✏️ Editar':'➕ Novo'} Jogador</div>
-      <div class="field"><label>Nome</label><input id="f-name" value="${p?.name||''}" placeholder="Ex: Falcão" style="border-color:#ffffff18" onfocus="this.style.borderColor='${c.bg}88'" onblur="this.style.borderColor='#ffffff18'"/></div>
-      <div class="field"><label>Clube</label><input id="f-club" value="${p?.club||''}" placeholder="Ex: Magnus Futsal" style="border-color:#ffffff18" onfocus="this.style.borderColor='${c.bg}88'" onblur="this.style.borderColor='#ffffff18'"/></div>
-      <div class="field">
-        <label>Posição</label>
+      <div class="modal-title">${p?.id?'✏️ Editar Jogador':'➕ Novo Jogador'}</div>
+      <div class="field"><label>Nome</label><input id="f-name" value="${p?.name||''}" placeholder="Ex: Falcão" style="border-color:#ffffff18"/></div>
+      <div class="field"><label>Clube</label><input id="f-club" value="${p?.club||''}" placeholder="Ex: Magnus" style="border-color:#ffffff18"/></div>
+      <div class="field"><label>Posição</label>
         <div class="pos-btns">
-          ${POSITIONS.map(pos2=>{const c2=posColor(pos2);const act=pos2===(p?.position||"Goleiro");return `<button class="pos-btn" data-action="setpos" data-pos="${pos2}" style="border:1.5px solid ${act?c2.bg:'#ffffff18'};background:${act?c2.bg+'30':'#ffffff08'};color:${act?c2.bg:'#666'}">${posEmojis[pos2]||''} ${pos2}</button>`;}).join('')}
+          ${POSITIONS.map(pos2=>{const c2=posColor(pos2);const act=pos2===pos;return `<button class="pos-btn" data-action="setpos" data-pos="${pos2}" style="border:1.5px solid ${act?c2.bg:'#ffffff18'};background:${act?c2.bg+'30':'#ffffff08'};color:${act?c2.bg:'#666'}">${pos2}</button>`;}).join('')}
         </div>
       </div>
-      <div class="field"><label>Nota — <span style="color:#FFD700">${QUALITY_LABELS[p?.quality||0]||'Selecione'}</span></label>
-        <div style="display:flex;gap:8px">${[1,2,3,4,5].map(s=>`<button data-action="setquality" data-q="${s}" style="background:none;border:none;cursor:pointer;font-size:30px;padding:4px;color:${s<=(p?.quality||0)?'#FFD700':'#2a2a3a'};text-shadow:${s<=(p?.quality||0)?'0 0 10px #FFD70099':'none'};transition:all 0.15s">★</button>`).join('')}</div>
+      <div class="field"><label>⚡ ATRIBUTOS</label>
+        <div class="attr-grid">
+          ${ATTRIBUTES.map(attr => `
+            <div class="attr-item">
+              <div class="attr-header"><span>${attr.name}</span><span class="attr-value" id="val-${attr.id}">${attrs[attr.id]||5}</span></div>
+              <input type="range" class="attr-slider" data-attr="${attr.id}" min="0" max="${attr.max}" value="${attrs[attr.id]||5}" step="1" style="width:100%"/>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="overall-badge">
+        <div style="font-size:10px;letter-spacing:2px;opacity:0.8">OVERALL</div>
+        <div class="overall-number" id="overall-preview">${overall}</div>
+        <div style="font-size:10px">${stars(Math.floor(overall/2))}</div>
       </div>
       <div class="modal-actions">
         <button class="cancel-btn" data-action="closemodal">Cancelar</button>
-        <button class="save-btn" data-action="savemodal" style="background:linear-gradient(135deg,${c.bg},${c.bg}bb);box-shadow:0 4px 20px ${c.glow}">SALVAR</button>
+        <button class="save-btn" data-action="savemodal" style="background:linear-gradient(135deg,${c.bg},${c.bg}bb)">SALVAR</button>
       </div>
     </div>
   </div>`;
@@ -279,21 +308,17 @@ function render(){
   if(loading){document.getElementById("app").innerHTML=`<div class="loading-screen"><div class="big-spinner"></div><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#555">CARREGANDO...</div></div>`;return;}
 
   const filteredPlayers=filterPos==="Todos"?players:players.filter(p=>p.position===filterPos);
-  const pendingCount=players.filter(p=>!p.quality||p.quality===0).length;
+  const pendingCount=players.filter(p=>!p.attributes || Object.values(p.attributes).every(v=>v===0)).length;
   const presenteCount=players.filter(p=>p.presente===true).length;
 
   let html=`<div class="header"><div class="header-inner">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:2px">
-      <div>
-        <div class="logo">⭐ BABA DOS GALÁTICOS</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
-          <span style="font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase">${players.length} jogadores · FUTSAL ELITE</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:7px;align-items:center">
-        <button class="btn-share" data-action="share">📲 CONVIDAR</button>
-        ${tab==="jogadores"?`<button class="btn-add" data-action="openmodal">+ ADD</button>`:''}
-      </div>
+      <div><div class="logo">⭐ BABA DOS GALÁTICOS</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
+        <span style="font-size:11px;color:#555;letter-spacing:1px">${players.length} jogadores · Elenco Galáctico</span>
+      </div></div>
+      <div style="display:flex;gap:7px"><button class="btn-share" data-action="share">📲 CONVIDAR</button>
+      ${tab==="jogadores"?`<button class="btn-add" data-action="openmodal">+ ADD</button>`:''}</div>
     </div>
     <div class="tabs">
       <button class="tab-btn ${tab==='jogadores'?'active':''}" data-action="tab" data-tab="jogadores">👤 ELENCO${pendingCount>0?` <span style="background:#FFD700;color:#000;border-radius:10px;padding:1px 6px;font-size:10px">${pendingCount}</span>`:''}</button>
@@ -304,242 +329,168 @@ function render(){
 
   if(tab==="jogadores"){
     html+=`<div class="filter-bar"><button class="fbtn ${filterPos==='Todos'?'active':''}" style="--c:#FFD700" data-action="filter" data-pos="Todos">Todos</button>${POSITIONS.map(pos=>{const c=posColor(pos);return `<button class="fbtn ${filterPos===pos?'active':''}" style="--c:${c.bg}" data-action="filter" data-pos="${pos}">${pos}</button>`;}).join('')}</div>`;
-    if(!filteredPlayers.length){html+=`<div class="empty"><div style="font-size:40px;margin-bottom:12px">⭐</div><div style="font-weight:700;font-size:15px">Nenhum jogador cadastrado</div><div style="font-size:12px;margin-top:6px;color:#555">Clique em + ADD para começar</div></div>`;}
+    if(!filteredPlayers.length){html+=`<div class="empty"><div style="font-size:40px;margin-bottom:12px">⭐</div><div style="font-weight:700;font-size:15px">Nenhum jogador cadastrado</div></div>`;}
     else filteredPlayers.forEach(p=>{html+=playerCardHTML(p,false);});
   }
 
   if(tab==="presenca"){
     const presentes=players.filter(p=>p.presente===true).sort((a,b)=>(a.confirmedAt||0)-(b.confirmedAt||0));
     const ausentes=players.filter(p=>!p.presente);
-    html+=`<div style="background:#2ECC7110;border:1px solid #2ECC7130;border-radius:14px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#2ECC71;line-height:1">${presentes.length}</div><div style="font-size:11px;color:#2ECC71bb;font-weight:700;text-transform:uppercase;letter-spacing:1px">Confirmados</div></div>
-      <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ff6666;line-height:1">${ausentes.length}</div><div style="font-size:11px;color:#ff6666bb;font-weight:700;text-transform:uppercase;letter-spacing:1px">Pendentes</div></div>
+    html+=`<div style="background:#2ECC7110;border:1px solid #2ECC7130;border-radius:14px;padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between">
+      <div><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#2ECC71">${presentes.length}</div><div style="font-size:11px;color:#2ECC71bb">Confirmados</div></div>
+      <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ff6666">${ausentes.length}</div><div style="font-size:11px;color:#ff6666bb">Pendentes</div></div>
     </div>`;
-
-    if(presentes.length>0){
-      html+=`<div style="font-size:11px;font-weight:700;color:#2ECC71;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">✅ Confirmados (${presentes.length})</div>`;
-      presentes.forEach(p=>{
-        const c=posColor(p.position);
-        html+=`<div style="background:linear-gradient(135deg,#162e1a,#1a2e1a);border:1.5px solid #2ECC7140;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px">
-          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,${c.bg},${c.bg}88);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;font-family:'Bebas Neue',sans-serif;box-shadow:0 0 10px #2ECC7140">${p.name.charAt(0)}</div>
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#fff">${p.name}</span>
-              <span style="background:${c.bg};color:#fff;border-radius:5px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${p.position}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
-              ${p.quality>0?`<div>${[1,2,3,4,5].map(s=>`<span style="font-size:14px;color:${s<=p.quality?'#FFD700':'#2a2a3a'}">★</span>`).join('')}</div>`:'<span style="font-size:9px;background:#FFD70020;color:#FFD700;border-radius:4px;padding:2px 8px;font-weight:700">⏳ SEM NOTA</span>'}
-            </div>
-          </div>
-          <button style="background:#ff444415;border:1px solid #ff444430;border-radius:7px;color:#ff6666;cursor:pointer;font-size:11px;padding:5px 9px;font-weight:700;font-family:'Syne',sans-serif;-webkit-appearance:none;white-space:nowrap" data-action="cancelar-presenca" data-id="${p.id}">✕ RETIRAR</button>
-        </div>`;
-      });
-    }
-
+    presentes.forEach(p=>{html+=playerCardHTML(p,false);});
     if(ausentes.length>0){
-      html+=`<div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px">⏳ Ainda não confirmaram (${ausentes.length})</div>`;
+      html+=`<div style="font-size:11px;font-weight:700;color:#666;margin:16px 0 10px">⏳ Aguardando confirmação (${ausentes.length})</div>`;
       ausentes.forEach(p=>{
         const c=posColor(p.position);
         html+=`<div style="background:#ffffff06;border:1.5px solid #ffffff10;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px;opacity:0.6">
-          <div style="width:38px;height:38px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#666;font-family:'Bebas Neue',sans-serif">${p.name.charAt(0)}</div>
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:7px">
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#666">${p.name}</span>
-              <span style="background:#333;color:#666;border-radius:5px;padding:2px 7px;font-size:9px;font-weight:700;text-transform:uppercase">${p.position}</span>
-            </div>
-          </div>
-          <button style="background:#ffffff08;border:1px solid #ffffff15;border-radius:7px;color:#aaa;cursor:pointer;font-size:11px;padding:5px 9px;font-weight:700;font-family:'Syne',sans-serif;-webkit-appearance:none" data-action="marcar-presente" data-id="${p.id}">+ MARCAR</button>
+          <div class="player-avatar" style="background:#333;box-shadow:none">${p.name.charAt(0)}</div>
+          <div style="flex:1"><span class="player-name" style="color:#666">${p.name}</span><span class="pos-badge" style="background:#333;color:#666">${p.position}</span></div>
+          <button style="background:#ffffff08;border:1px solid #ffffff15;border-radius:7px;color:#aaa;padding:5px 9px;cursor:pointer" data-action="marcar-presente" data-id="${p.id}">+ MARCAR</button>
         </div>`;
       });
-    }
-
-    if(players.length===0){
-      html+=`<div class="empty"><div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-weight:700;font-size:15px">Nenhum jogador cadastrado</div></div>`;
     }
   }
 
   if(tab==="sorteio"){
     const presentes=players.filter(p=>p.presente===true);
-    const presentesComNota=presentes.filter(p=>p.quality>0);
-    // Sorteio de times de 5: verifica se tem jogadores suficientes
-    const minJogadores=numTeams*PLAYERS_PER_TEAM;
-    const canDraw=presentesComNota.length>=numTeams*2; // mínimo 2 por time para sortear
-    const timesCompletos=Math.floor(presentesComNota.length/PLAYERS_PER_TEAM);
-    const sobra=presentesComNota.length%PLAYERS_PER_TEAM;
-
-    // Info sobre formação dos times
-    let sizeInfo="";
-    if(presentesComNota.length>0){
-      if(presentesComNota.length>=minJogadores){
-        sizeInfo=sobra>0?`${PLAYERS_PER_TEAM} por time (+${sobra} reserva)`:`${PLAYERS_PER_TEAM} por time`;
-      } else {
-        const mediaJog=Math.ceil(presentesComNota.length/numTeams);
-        sizeInfo=`≈${mediaJog} por time`;
-      }
-    } else {
-      sizeInfo="0 com nota";
-    }
-
-    // Aviso de times incompletos
-    const alertaIncompleto=presentesComNota.length>0&&presentesComNota.length<minJogadores;
-
+    const presentesComAtributos=presentes.filter(p=>p.attributes && calculateOverall(p.attributes)>0);
+    const canDraw=presentesComAtributos.length>=numTeams*2;
+    
     html+=`<div class="config-card"><div class="config-title">⚙️ CONFIGURAR SORTEIO</div>
-      <div style="background:#FFD7000d;border:1px solid #FFD70022;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:18px">⭐</span>
-        <div><div style="font-size:12px;font-weight:700;color:#FFD700">FUTSAL GALÁTICO — ${PLAYERS_PER_TEAM} POR TIME</div><div style="font-size:10px;color:#555;margin-top:1px">Goleiro · Fixo · Ala · Ala · Pivô</div></div>
-      </div>
       <div class="section-label">Número de times</div>
       <div class="num-btns">${[2,3,4].map(n=>`<button class="num-btn ${numTeams===n?'active':''}" data-action="numteams" data-n="${n}">${n}</button>`).join('')}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;background:#2ECC7110;border:1px solid #2ECC7130;border-radius:10px;padding:10px 14px;margin-bottom:${alertaIncompleto?'8px':'0'}">
-        <div><span style="font-size:13px;font-weight:700;color:#2ECC71">${presentes.length} confirmados</span><span style="font-size:11px;color:#555;margin-left:6px">(mín. ${numTeams*2} com nota)</span></div>
-        <span style="font-size:11px;color:#aaa">${sizeInfo}</span>
+      <div style="background:#2ECC7110;border:1px solid #2ECC7130;border-radius:10px;padding:10px 14px">
+        <span style="font-size:13px;font-weight:700;color:#2ECC71">${presentes.length} confirmados</span>
+        <span style="font-size:11px;color:#555;margin-left:6px">(${presentesComAtributos.length} com atributos)</span>
       </div>
-      ${alertaIncompleto?`<div style="background:#FFB80015;border:1px solid #FFB80030;border-radius:8px;padding:8px 12px;font-size:11px;color:#FFB800;display:flex;align-items:center;gap:6px">⚠️ Para ${numTeams} times de ${PLAYERS_PER_TEAM}, ideal ter ${minJogadores} jogadores com nota</div>`:''}
     </div>
-    ${presentes.length===0?`<div class="empty"><div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-weight:700;font-size:15px">Nenhum jogador confirmou presença</div><div style="font-size:13px;margin-top:8px;color:#555">Compartilhe o link para os jogadores confirmarem</div></div>`:''}
-    ${presentes.length>0?`<div class="section-label" style="margin-bottom:10px">Jogadores confirmados</div>${presentes.map(p=>playerCardHTML(p,false)).join('')}`:''}
-    <button class="draw-btn ${canDraw?'ready':'disabled'}" data-action="draw" ${!canDraw?'disabled':''}>${drawing?`<div class="spinner"></div> SORTEANDO...`:'⭐ SORTEAR TIMES GALÁTICOS ⭐'}</button>`;
+    ${presentes.length>0?`<div class="section-label">Jogadores confirmados</div>${presentes.map(p=>playerCardHTML(p,false)).join('')}`:''}
+    <button class="draw-btn ${canDraw?'ready':'disabled'}" data-action="draw" ${!canDraw?'disabled':''}>${drawing?`<div class="spinner"></div>`:'⭐ SORTEAR TIMES GALÁTICOS ⭐'}</button>`;
 
     if(drawn&&!drawing){
       const maxPts=Math.max(...drawn.map(t=>t.total),1);
-      html+=`<div class="quality-bar-card fu"><div class="section-label">Equilíbrio entre Galácticos</div>${drawn.map(t=>`<div class="bar-row"><span style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:${t.color};width:78px;letter-spacing:1px">${t.name}</span><div class="bar-track"><div class="bar-fill" style="width:${(t.total/maxPts)*100}%;background:linear-gradient(90deg,${t.color},${t.color}88)"></div></div><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#FFD700;width:26px;text-align:right">${t.total}</span></div>`).join('')}</div>
-      <div class="teams-grid fu" style="grid-template-columns:${numTeams===2?'1fr 1fr':'1fr'}">
-      ${drawn.map(t=>{
-        const avg=t.players.length?(t.total/t.players.length).toFixed(1):"0";
-        // Contagem de posições do time
-        const posCounts={};
-        t.players.forEach(p=>{posCounts[p.position]=(posCounts[p.position]||0)+1;});
+      html+=`<div class="quality-bar-card"><div class="section-label">Equilíbrio</div>${drawn.map(t=>`<div class="bar-row"><span style="width:78px;color:${t.color}">${t.name}</span><div class="bar-track"><div class="bar-fill" style="width:${(t.total/maxPts)*100}%;background:${t.color}"></div></div><span style="color:#FFD700;width:26px">${t.total}</span></div>`).join('')}</div>
+      <div class="teams-grid">${drawn.map(t=>{
         const posEmojis={"Goleiro":"🧤","Fixo":"🛡️","Ala":"⚡","Pivô":"🎯"};
-        const posInfo=POSITIONS.filter(pos=>posCounts[pos]).map(pos=>`<span style="font-size:10px;color:#666">${posEmojis[pos]}${posCounts[pos]}</span>`).join(' ');
-        const isComplete=t.players.length>=PLAYERS_PER_TEAM;
         return `<div class="team-card" style="--tc:${t.color}44">
-          <div style="background:linear-gradient(135deg,${t.color}33,${t.color}11);padding:13px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${t.color}44">
-            <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">${t.emoji}</span><div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:${t.color};line-height:1">${t.name}</div>
-              <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
-                <span style="font-size:11px;color:#777">${t.players.length} jog.</span>
-                ${!isComplete?`<span style="font-size:9px;background:#FFB80020;color:#FFB800;border-radius:4px;padding:1px 5px;font-weight:700">INCOMPLETO</span>`:''}
-                ${posInfo}
-              </div>
-            </div></div>
-            <div><div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#FFD700;line-height:1;text-align:right">${t.total}</div><div style="font-size:10px;color:#666;text-align:right">pts · média ${avg}</div></div>
+          <div style="background:linear-gradient(135deg,${t.color}33,${t.color}11);padding:13px 15px;display:flex;justify-content:space-between;border-bottom:1px solid ${t.color}44">
+            <div><span style="font-size:22px">${t.emoji}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${t.color}"> ${t.name}</span></div>
+            <div><span style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#FFD700">${t.total}</span></div>
           </div>
-          <div style="padding:11px 14px;display:flex;flex-direction:column;gap:7px">
-            ${t.players.map(p=>{const c=posColor(p.position);const emo=posEmojis[p.position]||'';return `<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;width:16px;text-align:center">${emo}</span><span style="font-size:13px;font-weight:700;color:#ddd;flex:1">${p.name}</span><span style="font-size:9px;background:${c.bg}33;color:${c.bg};border-radius:4px;padding:2px 6px;font-weight:700">${p.position.toUpperCase()}</span><div>${[1,2,3,4,5].map(s=>`<span style="font-size:11px;color:${s<=(p.quality||0)?'#FFD700':'#2a2a2a'}">★</span>`).join('')}</div></div>`;}).join('')}
-            ${Array.from({length:Math.max(0,PLAYERS_PER_TEAM-t.players.length)}).map(()=>`<div style="display:flex;align-items:center;gap:10px;opacity:0.25"><span style="font-size:13px;width:16px;text-align:center">⭐</span><span style="font-size:12px;color:#555;flex:1;font-style:italic">Vaga galáctica</span></div>`).join('')}
-          </div>
+          <div style="padding:11px 14px">${t.players.map(p=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span>${posEmojis[p.position]||'⭐'}</span><span style="flex:1">${p.name}</span><span>${stars(Math.floor((p.overall||0)/2))}</span></div>`).join('')}</div>
         </div>`;
-      }).join('')}
-      </div><button class="reshuffle-btn" data-action="draw">🔄 SORTEAR NOVAMENTE</button>`;
+      }).join('')}</div>
+      <button class="reshuffle-btn" data-action="draw">🔄 SORTEAR NOVAMENTE</button>`;
     }
   }
   html+=`</div>`;
   if(state.modal!==null) html+=modalHTML();
   document.getElementById("app").innerHTML=html;
+
+  // Bind dos sliders
+  if(state.modal){
+    ATTRIBUTES.forEach(attr => {
+      const slider = document.querySelector(`.attr-slider[data-attr="${attr.id}"]`);
+      if(slider){
+        slider.oninput = (e) => {
+          const val = e.target.value;
+          document.getElementById(`val-${attr.id}`).innerText = val;
+          if(!state.modal.attributes) state.modal.attributes = {};
+          state.modal.attributes[attr.id] = parseInt(val);
+          const newOverall = calculateOverall(state.modal.attributes);
+          document.getElementById("overall-preview").innerHTML = newOverall;
+        };
+      }
+    });
+  }
 }
 
-function getModalFields(){return{name:(document.getElementById("f-name")?.value||"").trim(),club:(document.getElementById("f-club")?.value||"").trim(),position:state.modal?.position||"Goleiro",quality:state.modal?.quality||0};}
+function getModalFields(){
+  const attrs = {};
+  ATTRIBUTES.forEach(attr => { attrs[attr.id] = parseInt(document.querySelector(`.attr-slider[data-attr="${attr.id}"]`)?.value || 5); });
+  return {
+    name: (document.getElementById("f-name")?.value||"").trim(),
+    club: (document.getElementById("f-club")?.value||"").trim(),
+    position: state.modal?.position||"Goleiro",
+    attributes: attrs,
+    overall: calculateOverall(attrs)
+  };
+}
 
-document.addEventListener("click",e=>{
-  const el=e.target.closest("[data-action]");if(!el)return;
-  const action=el.dataset.action,id=el.dataset.id;
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-action]"); if(!el) return;
+  const action = el.dataset.action, id = el.dataset.id;
   if(action==="tab"){state.tab=el.dataset.tab;state.drawn=null;render();}
   else if(action==="filter"){state.filterPos=el.dataset.pos;render();}
-  else if(action==="openmodal"){state.modal={position:"Goleiro",quality:0};render();}
+  else if(action==="openmodal"){state.modal={position:"Goleiro",attributes:{velocidade:5,drible:5,chute:5,passe:5,defesa:5}};render();}
   else if(action==="closemodal"){state.modal=null;render();}
-  else if(action==="edit"){state.modal={...state.players.find(p=>p.id===id)};render();}
-  else if(action==="delete"){if(confirm("Remover jogador?")){playersRef.child(id).remove();state.selected.delete(id);render();}}
-  else if(action==="toggle"){if(state.selected.has(id))state.selected.delete(id);else state.selected.add(id);render();}
-  else if(action==="setpos"){state.modal={...state.modal,...getModalFields(),position:el.dataset.pos};render();}
-  else if(action==="setquality"){state.modal={...state.modal,...getModalFields(),quality:parseInt(el.dataset.q)};render();}
+  else if(action==="edit"){const p=state.players.find(p=>p.id===id);state.modal={...p,attributes:p.attributes||{velocidade:5,drible:5,chute:5,passe:5,defesa:5}};render();}
+  else if(action==="delete"){if(confirm("Remover jogador?")){remove(ref(db,`jogadores/${id}`));render();}}
+  else if(action==="setpos"){state.modal={...state.modal,position:el.dataset.pos};render();}
   else if(action==="savemodal"){
-    const d=getModalFields();if(!d.name)return;
-    if(state.modal?.id){playersRef.child(state.modal.id).update(d);}
-    else{playersRef.push(d);}
-    state.modal=null;render();
+    const d=getModalFields(); if(!d.name) return;
+    if(state.modal?.id){ update(ref(db,`jogadores/${state.modal.id}`), d); }
+    else{ push(ref(db,'jogadores'), d); }
+    state.modal=null; render();
   }
   else if(action==="numteams"){state.numTeams=parseInt(el.dataset.n);state.drawn=null;render();}
   else if(action==="draw"){
-    const pool=state.players.filter(p=>p.presente===true&&p.quality>0);
-    if(pool.length<state.numTeams*2)return;
-    state.drawing=true;render();
-    setTimeout(()=>{state.drawn=balancedDraw(pool,state.numTeams);state.drawing=false;render();},900);
+    const pool=state.players.filter(p=>p.presente===true && p.attributes && calculateOverall(p.attributes)>0).map(p=>({...p, overall:calculateOverall(p.attributes)}));
+    if(pool.length<state.numTeams*2) return;
+    state.drawing=true; render();
+    setTimeout(()=>{state.drawn=balancedDraw(pool,state.numTeams); state.drawing=false; render();}, 500);
   }
-  else if(action==="marcar-presente"){
-    playersRef.child(id).update({presente:true,confirmedAt:Date.now()});render();
-  }
-  else if(action==="cancelar-presenca"){
-    if(confirm("Retirar presença deste jogador?"))
-      playersRef.child(id).update({presente:false,confirmedAt:null});
-    render();
-  }
-  else if(action==="share"){
-    const url=location.origin+location.pathname.replace(/\/index\.html$/,"").replace(/\/$/,"")+"/entrar.html";
-    if(navigator.share){navigator.share({title:"Baba dos Galáticos ⭐",text:"Venha jogar no baba de futsal!",url});}
-    else{navigator.clipboard.writeText(url).then(()=>alert("Link copiado!\n"+url)).catch(()=>alert(url));}
-  }
+  else if(action==="marcar-presente"){ update(ref(db,`jogadores/${id}`), {presente:true,confirmedAt:Date.now()}); render(); }
+  else if(action==="cancelar-presenca"){ if(confirm("Retirar presença?")) update(ref(db,`jogadores/${id}`), {presente:false,confirmedAt:null}); render(); }
+  else if(action==="share"){ const url=window.location.href.split('?')[0].split('#')[0]; if(navigator.share){navigator.share({title:"Baba dos Galáticos ⭐",text:"Venha jogar!",url});} else{navigator.clipboard.writeText(url).then(()=>alert("Link copiado!\n"+url));} }
   if(el.id==="modal-overlay"){state.modal=null;render();}
 });
 
-// ── LOGIN ─────────────────────────────────────────────────────────────────────
 const ADM_PASSWORD = "baba123";
 let selectedLoginPos = null;
-
-const posColorsLogin={"Goleiro":"#FF6B35","Fixo":"#00C2FF","Ala":"#9B59B6","Pivô":"#2ECC71"};
-
 function showLogin(){ document.getElementById("login-screen").style.display="flex"; document.getElementById("app").style.display="none"; }
 function showApp(){ document.getElementById("login-screen").style.display="none"; document.getElementById("success-screen").style.display="none"; document.getElementById("app").style.display="block"; }
 function showSuccess(name){ document.getElementById("login-screen").style.display="none"; document.getElementById("success-screen").style.display="flex"; document.getElementById("success-player-name").textContent="Bem-vindo, "+name+"! ⭐"; }
 
-document.getElementById("pos-grid-login").addEventListener("click",e=>{
-  const card=e.target.closest("[data-pos]");if(!card)return;
-  document.querySelectorAll("#pos-grid-login [data-pos]").forEach(c=>{
-    c.style.borderColor="#ffffff12";c.style.background="#ffffff07";
-    c.querySelector("div:last-child").style.color="#aaa";
-  });
-  const c=posColorsLogin[card.dataset.pos]||"#FFD700";
-  card.style.borderColor=c;card.style.background=c+"30";
-  card.querySelector("div:last-child").style.color=c;
+document.getElementById("pos-grid-login")?.addEventListener("click",e=>{
+  const card=e.target.closest("[data-pos]"); if(!card) return;
+  document.querySelectorAll("#pos-grid-login [data-pos]").forEach(c=>{c.style.borderColor="#ffffff12";c.style.background="#ffffff07";c.querySelector("div:last-child").style.color="#aaa";});
+  const c=POS_COLORS[card.dataset.pos]?.bg||"#FFD700";
+  card.style.borderColor=c; card.style.background=c+"30"; card.querySelector("div:last-child").style.color=c;
   selectedLoginPos=card.dataset.pos;
 });
 
-document.getElementById("login-player-btn").addEventListener("click",async()=>{
+document.getElementById("login-player-btn")?.addEventListener("click",async()=>{
   const name=document.getElementById("login-name").value.trim();
-  if(!name||!selectedLoginPos){alert("Preencha seu nome e posição!");return;}
-  const btn=document.getElementById("login-player-btn");
-  btn.textContent="VERIFICANDO...";btn.disabled=true;
-  const data=lsLoad();
-  const existing=Object.entries(data).find(([id,p])=>p.name&&p.name.toLowerCase()===name.toLowerCase());
-  if(!existing){
-    document.getElementById("login-error").style.display="block";
-    btn.textContent="CONFIRMAR PRESENÇA";btn.disabled=false;
-    return;
-  }
+  if(!name||!selectedLoginPos){alert("Preencha nome e posição!");return;}
+  const btn=document.getElementById("login-player-btn"); btn.textContent="VERIFICANDO..."; btn.disabled=true;
+  const snapshot = await new Promise((resolve) => { onValue(playersRefDB, resolve, { onlyOnce: true }); });
+  const data = snapshot.val() || {};
+  const existing = Object.entries(data).find(([id,p]) => p.name && p.name.toLowerCase() === name.toLowerCase());
+  if(!existing){ document.getElementById("login-error").style.display="block"; btn.textContent="CONFIRMAR PRESENÇA"; btn.disabled=false; return; }
   document.getElementById("login-error").style.display="none";
-  playersRef.child(existing[0]).update({position:selectedLoginPos,presente:true,confirmedAt:Date.now()});
+  update(ref(db,`jogadores/${existing[0]}`), {position:selectedLoginPos, presente:true, confirmedAt:Date.now()});
   showSuccess(existing[1].name);
 });
 
-document.getElementById("login-adm-btn").addEventListener("click",()=>{
+document.getElementById("login-adm-btn")?.addEventListener("click",()=>{
   const pw=document.getElementById("adm-password").value;
-  if(pw===ADM_PASSWORD){ localStorage.setItem("adm","1"); showApp(); state.loading=false; render(); }
+  if(pw===ADM_PASSWORD){ localStorage.setItem("adm","1"); showApp(); state.loading=false; }
   else { document.getElementById("adm-error").style.display="block"; }
 });
 
-const isAdm=localStorage.getItem("adm")==="1";
-if(isAdm){showApp();}else{showLogin();}
-
-playersRef.on("value",data=>{
-  state.players=Object.entries(data).map(([id,p])=>({id,...p})).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-  state.players.forEach(p=>state.selected.add(p.id));
-  state.loading=false;
+onValue(playersRefDB, (snapshot) => {
+  const data = snapshot.val() || {};
+  state.players = Object.entries(data).map(([id,p]) => ({id,...p, overall: p.overall || calculateOverall(p.attributes)})).sort((a,b)=>a.name.localeCompare(b.name));
+  state.players.forEach(p => state.selected.add(p.id));
+  state.loading = false;
   render();
 });
-</script>
-<script>
-  if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
-  }
+
+if(localStorage.getItem("adm")==="1"){ showApp(); } else { showLogin(); }
 </script>
 </body>
 </html>
