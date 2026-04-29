@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#0d1b3e"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="Arena PIB"/>
+  <meta name="apple-mobile-web-app-title" content="Baba dos Galáticos"/>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
-  <title>Arena PIB ⚽</title>
+  <title>Baba dos Galáticos ⭐</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 
   <style>
@@ -23,12 +23,12 @@
 
     .header{padding:28px 16px 0;background:linear-gradient(180deg,#0d1b3e 80%,transparent);position:sticky;top:0;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:100;border-bottom:1px solid #ffffff0f}
     .header-inner{max-width:640px;margin:0 auto}
-    .logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;line-height:1;background:linear-gradient(90deg,#fff 40%,#00C2FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;line-height:1;background:linear-gradient(90deg,#FFD700 40%,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
     .tabs{display:flex;gap:4px;margin-top:14px}
     .tab-btn{flex:1;padding:11px 8px;border:none;background:transparent;color:#555;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;cursor:pointer;border-radius:10px 10px 0 0;transition:all 0.2s;border-bottom:2px solid transparent;-webkit-appearance:none}
-    .tab-btn.active{background:#ffffff10;color:#fff;border-bottom:2px solid #00C2FF}
+    .tab-btn.active{background:#ffffff10;color:#fff;border-bottom:2px solid #FFD700}
     .content{max-width:640px;margin:0 auto;padding:18px 14px 80px}
-    .btn-add{background:linear-gradient(135deg,#00C2FF,#0060ff);border:none;border-radius:11px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;padding:9px 13px;cursor:pointer;box-shadow:0 4px 20px #00C2FF44;-webkit-appearance:none}
+    .btn-add{background:linear-gradient(135deg,#FFD700,#FF8C00);border:none;border-radius:11px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;padding:9px 13px;cursor:pointer;box-shadow:0 4px 20px #FFD70044;-webkit-appearance:none}
     .btn-share{background:#ffffff0f;border:1px solid #ffffff1a;border-radius:11px;color:#bbb;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 13px;cursor:pointer;-webkit-appearance:none}
     .filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
     .fbtn{padding:5px 12px;border-radius:7px;border:1.5px solid #ffffff15;background:#ffffff08;color:#666;font-weight:700;font-size:11px;cursor:pointer;-webkit-appearance:none}
@@ -48,10 +48,10 @@
     .section-label{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
     .num-btns{display:flex;gap:8px;margin-bottom:14px}
     .num-btn{padding:8px 20px;border-radius:10px;border:2px solid #ffffff18;background:#ffffff08;color:#666;font-family:'Bebas Neue',sans-serif;font-size:22px;cursor:pointer;transition:all 0.15s;-webkit-appearance:none}
-    .num-btn.active{border-color:#00C2FF;background:#00C2FF22;color:#00C2FF}
-    .selection-info{display:flex;align-items:center;justify-content:space-between;background:#00C2FF0d;border:1px solid #00C2FF22;border-radius:10px;padding:10px 14px;margin-bottom:10px}
+    .num-btn.active{border-color:#FFD700;background:#FFD70022;color:#FFD700}
+    .selection-info{display:flex;align-items:center;justify-content:space-between;background:#FFD7000d;border:1px solid #FFD70022;border-radius:10px;padding:10px 14px;margin-bottom:10px}
     .draw-btn{width:100%;padding:16px;border-radius:14px;border:none;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;margin-bottom:24px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;-webkit-appearance:none}
-    .draw-btn.ready{background:linear-gradient(135deg,#00C2FF,#0055ff);color:#fff;box-shadow:0 6px 30px #00C2FF44}
+    .draw-btn.ready{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#fff;box-shadow:0 6px 30px #FFD70044}
     .draw-btn.disabled{background:#ffffff0d;color:#444;cursor:not-allowed}
     .spinner{width:20px;height:20px;border:3px solid #fff4;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite}
     .quality-bar-card{background:#ffffff08;border:1px solid #ffffff0f;border-radius:12px;padding:14px 16px;margin-bottom:18px}
@@ -73,7 +73,7 @@
     .cancel-btn{flex:1;padding:11px;border-radius:10px;border:1px solid #ffffff18;background:#ffffff0d;color:#666;font-weight:700;font-size:14px;cursor:pointer;-webkit-appearance:none}
     .save-btn{flex:2;padding:11px;border-radius:10px;border:none;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;cursor:pointer;-webkit-appearance:none}
     .loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
-    .big-spinner{width:36px;height:36px;border:4px solid #ffffff0d;border-top-color:#00C2FF;border-radius:50%;animation:spin 0.8s linear infinite}
+    .big-spinner{width:36px;height:36px;border:4px solid #ffffff0d;border-top-color:#FFD700;border-radius:50%;animation:spin 0.8s linear infinite}
     .empty{text-align:center;padding:60px 20px;color:#444}
     .pending-badge{font-size:9px;background:#FFD70020;color:#FFD700;border-radius:4px;padding:2px 8px;font-weight:700;letter-spacing:0.5px}
     .live-dot{width:7px;height:7px;border-radius:50%;background:#2ECC71;animation:pulse 1.5s infinite;display:inline-block;margin-right:4px}
@@ -81,9 +81,9 @@
 </head>
 <body>
 <div id="login-screen" style="display:none;position:fixed;inset:0;background:radial-gradient(ellipse at 30% 0%,#0d1b3e,#080c1a 60%);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:30px">
-  <div style="font-size:56px;margin-bottom:10px">⚽</div>
-  <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:3px;background:linear-gradient(90deg,#fff 40%,#00C2FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px">ARENA PIB</div>
-  <div style="font-size:13px;color:#666;letter-spacing:1px;margin-bottom:40px">Baba da PIB • Futsal</div>
+  <div style="font-size:56px;margin-bottom:10px">⭐</div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:3px;background:linear-gradient(90deg,#FFD700 40%,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px">BABA DOS GALÁTICOS</div>
+  <div style="font-size:13px;color:#666;letter-spacing:1px;margin-bottom:40px">Futsal de elite ⭐</div>
 
   <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
     <!-- JOGADOR -->
@@ -108,7 +108,7 @@
       <div id="login-error" style="display:none;background:#ff444415;border:1px solid #ff444440;border-radius:8px;padding:10px 12px;font-size:12px;color:#ff6666;margin-bottom:10px">
         🚫 Nome não encontrado. Verifique com o ADM.
       </div>
-      <button id="login-player-btn" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#00C2FF,#0055ff);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;-webkit-appearance:none">CONFIRMAR PRESENÇA</button>
+      <button id="login-player-btn" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#FFD700,#FF8C00);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;-webkit-appearance:none">CONFIRMAR PRESENÇA</button>
     </div>
 
     <!-- ADM -->
@@ -125,8 +125,8 @@
 </div>
 
 <div id="success-screen" style="display:none;position:fixed;inset:0;background:radial-gradient(ellipse at 30% 0%,#0d1b3e,#080c1a 60%);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center">
-  <div style="font-size:64px;margin-bottom:16px">🎉</div>
-  <div id="success-player-name" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#2ECC71;margin-bottom:8px"></div>
+  <div style="font-size:64px;margin-bottom:16px">⭐</div>
+  <div id="success-player-name" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#FFD700;margin-bottom:8px"></div>
   <div style="font-size:14px;color:#888;line-height:1.6;margin-bottom:20px">Você está na lista do baba!</div>
   <div style="background:#ffffff08;border-radius:12px;padding:14px 20px;font-size:12px;color:#666;line-height:1.6;max-width:320px">
     <strong style="color:#FFD700;display:block;margin-bottom:4px">⏳ Aguardando nota</strong>
@@ -138,7 +138,7 @@
 
 <script>
 // ── STORAGE (localStorage) ────────────────────────────────────────────────────
-const LS_KEY = "arenapib_jogadores";
+const LS_KEY = "baba_galaticos_jogadores";
 function lsLoad(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"{}"); }catch(e){ return {}; } }
 function lsSave(data){ try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); }catch(e){} }
 
@@ -165,10 +165,10 @@ const POS_COLORS = {
 
 const QUALITY_LABELS = {1:"Fraco",2:"Regular",3:"Bom",4:"Ótimo",5:"Elite"};
 const TEAM_THEMES = [
-  {name:"Time A",color:"#FF4444",emoji:"🔴"},
-  {name:"Time B",color:"#4488FF",emoji:"🔵"},
-  {name:"Time C",color:"#44CC44",emoji:"🟢"},
-  {name:"Time D",color:"#FFB800",emoji:"🟡"}
+  {name:"Galácticos A",color:"#FF4444",emoji:"⭐"},
+  {name:"Galácticos B",color:"#4488FF",emoji:"⭐"},
+  {name:"Galácticos C",color:"#44CC44",emoji:"⭐"},
+  {name:"Galácticos D",color:"#FFB800",emoji:"⭐"}
 ];
 
 // Times de 5 jogadores no futsal
@@ -285,9 +285,9 @@ function render(){
   let html=`<div class="header"><div class="header-inner">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:2px">
       <div>
-        <div class="logo">⚽ ARENA PIB</div>
+        <div class="logo">⭐ BABA DOS GALÁTICOS</div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
-          <span style="font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase">${players.length} jogadores · FUTSAL</span>
+          <span style="font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase">${players.length} jogadores · FUTSAL ELITE</span>
         </div>
       </div>
       <div style="display:flex;gap:7px;align-items:center">
@@ -303,8 +303,8 @@ function render(){
   </div></div><div class="content">`;
 
   if(tab==="jogadores"){
-    html+=`<div class="filter-bar"><button class="fbtn ${filterPos==='Todos'?'active':''}" style="--c:#00C2FF" data-action="filter" data-pos="Todos">Todos</button>${POSITIONS.map(pos=>{const c=posColor(pos);return `<button class="fbtn ${filterPos===pos?'active':''}" style="--c:${c.bg}" data-action="filter" data-pos="${pos}">${pos}</button>`;}).join('')}</div>`;
-    if(!filteredPlayers.length){html+=`<div class="empty"><div style="font-size:40px;margin-bottom:12px">⚽</div><div style="font-weight:700;font-size:15px">Nenhum jogador ainda</div></div>`;}
+    html+=`<div class="filter-bar"><button class="fbtn ${filterPos==='Todos'?'active':''}" style="--c:#FFD700" data-action="filter" data-pos="Todos">Todos</button>${POSITIONS.map(pos=>{const c=posColor(pos);return `<button class="fbtn ${filterPos===pos?'active':''}" style="--c:${c.bg}" data-action="filter" data-pos="${pos}">${pos}</button>`;}).join('')}</div>`;
+    if(!filteredPlayers.length){html+=`<div class="empty"><div style="font-size:40px;margin-bottom:12px">⭐</div><div style="font-weight:700;font-size:15px">Nenhum jogador cadastrado</div><div style="font-size:12px;margin-top:6px;color:#555">Clique em + ADD para começar</div></div>`;}
     else filteredPlayers.forEach(p=>{html+=playerCardHTML(p,false);});
   }
 
@@ -384,9 +384,9 @@ function render(){
     const alertaIncompleto=presentesComNota.length>0&&presentesComNota.length<minJogadores;
 
     html+=`<div class="config-card"><div class="config-title">⚙️ CONFIGURAR SORTEIO</div>
-      <div style="background:#00C2FF0d;border:1px solid #00C2FF22;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:18px">👟</span>
-        <div><div style="font-size:12px;font-weight:700;color:#00C2FF">FUTSAL — ${PLAYERS_PER_TEAM} JOGADORES POR TIME</div><div style="font-size:10px;color:#555;margin-top:1px">Goleiro · Fixo · Ala · Ala · Pivô</div></div>
+      <div style="background:#FFD7000d;border:1px solid #FFD70022;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">⭐</span>
+        <div><div style="font-size:12px;font-weight:700;color:#FFD700">FUTSAL GALÁTICO — ${PLAYERS_PER_TEAM} POR TIME</div><div style="font-size:10px;color:#555;margin-top:1px">Goleiro · Fixo · Ala · Ala · Pivô</div></div>
       </div>
       <div class="section-label">Número de times</div>
       <div class="num-btns">${[2,3,4].map(n=>`<button class="num-btn ${numTeams===n?'active':''}" data-action="numteams" data-n="${n}">${n}</button>`).join('')}</div>
@@ -398,11 +398,11 @@ function render(){
     </div>
     ${presentes.length===0?`<div class="empty"><div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-weight:700;font-size:15px">Nenhum jogador confirmou presença</div><div style="font-size:13px;margin-top:8px;color:#555">Compartilhe o link para os jogadores confirmarem</div></div>`:''}
     ${presentes.length>0?`<div class="section-label" style="margin-bottom:10px">Jogadores confirmados</div>${presentes.map(p=>playerCardHTML(p,false)).join('')}`:''}
-    <button class="draw-btn ${canDraw?'ready':'disabled'}" data-action="draw" ${!canDraw?'disabled':''}>${drawing?`<div class="spinner"></div> SORTEANDO...`:'⚽ SORTEAR TIMES EQUILIBRADOS'}</button>`;
+    <button class="draw-btn ${canDraw?'ready':'disabled'}" data-action="draw" ${!canDraw?'disabled':''}>${drawing?`<div class="spinner"></div> SORTEANDO...`:'⭐ SORTEAR TIMES GALÁTICOS ⭐'}</button>`;
 
     if(drawn&&!drawing){
       const maxPts=Math.max(...drawn.map(t=>t.total),1);
-      html+=`<div class="quality-bar-card fu"><div class="section-label">Equilíbrio</div>${drawn.map(t=>`<div class="bar-row"><span style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:${t.color};width:58px;letter-spacing:1px">${t.name}</span><div class="bar-track"><div class="bar-fill" style="width:${(t.total/maxPts)*100}%;background:linear-gradient(90deg,${t.color},${t.color}88)"></div></div><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#FFD700;width:26px;text-align:right">${t.total}</span></div>`).join('')}</div>
+      html+=`<div class="quality-bar-card fu"><div class="section-label">Equilíbrio entre Galácticos</div>${drawn.map(t=>`<div class="bar-row"><span style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:${t.color};width:78px;letter-spacing:1px">${t.name}</span><div class="bar-track"><div class="bar-fill" style="width:${(t.total/maxPts)*100}%;background:linear-gradient(90deg,${t.color},${t.color}88)"></div></div><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#FFD700;width:26px;text-align:right">${t.total}</span></div>`).join('')}</div>
       <div class="teams-grid fu" style="grid-template-columns:${numTeams===2?'1fr 1fr':'1fr'}">
       ${drawn.map(t=>{
         const avg=t.players.length?(t.total/t.players.length).toFixed(1):"0";
@@ -426,11 +426,11 @@ function render(){
           </div>
           <div style="padding:11px 14px;display:flex;flex-direction:column;gap:7px">
             ${t.players.map(p=>{const c=posColor(p.position);const emo=posEmojis[p.position]||'';return `<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;width:16px;text-align:center">${emo}</span><span style="font-size:13px;font-weight:700;color:#ddd;flex:1">${p.name}</span><span style="font-size:9px;background:${c.bg}33;color:${c.bg};border-radius:4px;padding:2px 6px;font-weight:700">${p.position.toUpperCase()}</span><div>${[1,2,3,4,5].map(s=>`<span style="font-size:11px;color:${s<=(p.quality||0)?'#FFD700':'#2a2a2a'}">★</span>`).join('')}</div></div>`;}).join('')}
-            ${Array.from({length:Math.max(0,PLAYERS_PER_TEAM-t.players.length)}).map(()=>`<div style="display:flex;align-items:center;gap:10px;opacity:0.25"><span style="font-size:13px;width:16px;text-align:center">❓</span><span style="font-size:12px;color:#555;flex:1;font-style:italic">Vaga aberta</span></div>`).join('')}
+            ${Array.from({length:Math.max(0,PLAYERS_PER_TEAM-t.players.length)}).map(()=>`<div style="display:flex;align-items:center;gap:10px;opacity:0.25"><span style="font-size:13px;width:16px;text-align:center">⭐</span><span style="font-size:12px;color:#555;flex:1;font-style:italic">Vaga galáctica</span></div>`).join('')}
           </div>
         </div>`;
       }).join('')}
-      </div><button class="reshuffle-btn" data-action="draw">🔄 RESSORTEAR</button>`;
+      </div><button class="reshuffle-btn" data-action="draw">🔄 SORTEAR NOVAMENTE</button>`;
     }
   }
   html+=`</div>`;
@@ -475,7 +475,7 @@ document.addEventListener("click",e=>{
   }
   else if(action==="share"){
     const url=location.origin+location.pathname.replace(/\/index\.html$/,"").replace(/\/$/,"")+"/entrar.html";
-    if(navigator.share){navigator.share({title:"Arena PIB ⚽",text:"Entre no baba de futsal!",url});}
+    if(navigator.share){navigator.share({title:"Baba dos Galáticos ⭐",text:"Venha jogar no baba de futsal!",url});}
     else{navigator.clipboard.writeText(url).then(()=>alert("Link copiado!\n"+url)).catch(()=>alert(url));}
   }
   if(el.id==="modal-overlay"){state.modal=null;render();}
@@ -489,7 +489,7 @@ const posColorsLogin={"Goleiro":"#FF6B35","Fixo":"#00C2FF","Ala":"#9B59B6","Piv�
 
 function showLogin(){ document.getElementById("login-screen").style.display="flex"; document.getElementById("app").style.display="none"; }
 function showApp(){ document.getElementById("login-screen").style.display="none"; document.getElementById("success-screen").style.display="none"; document.getElementById("app").style.display="block"; }
-function showSuccess(name){ document.getElementById("login-screen").style.display="none"; document.getElementById("success-screen").style.display="flex"; document.getElementById("success-player-name").textContent="Bem-vindo, "+name+"! 👋"; }
+function showSuccess(name){ document.getElementById("login-screen").style.display="none"; document.getElementById("success-screen").style.display="flex"; document.getElementById("success-player-name").textContent="Bem-vindo, "+name+"! ⭐"; }
 
 document.getElementById("pos-grid-login").addEventListener("click",e=>{
   const card=e.target.closest("[data-pos]");if(!card)return;
@@ -497,7 +497,7 @@ document.getElementById("pos-grid-login").addEventListener("click",e=>{
     c.style.borderColor="#ffffff12";c.style.background="#ffffff07";
     c.querySelector("div:last-child").style.color="#aaa";
   });
-  const c=posColorsLogin[card.dataset.pos]||"#00C2FF";
+  const c=posColorsLogin[card.dataset.pos]||"#FFD700";
   card.style.borderColor=c;card.style.background=c+"30";
   card.querySelector("div:last-child").style.color=c;
   selectedLoginPos=card.dataset.pos;
