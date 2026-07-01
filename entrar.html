@@ -50,6 +50,14 @@ body::before{
   pointer-events:none;z-index:0;
 }
 
+/* ── LOADING ── */
+#loading-overlay{
+  position:fixed;inset:0;background:var(--preto);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+}
+#loading-overlay .lo-star{font-size:40px;animation:countPulse 1s ease-in-out infinite}
+#loading-overlay .lo-text{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;color:var(--ouro-pale);text-transform:uppercase}
+
 /* ── HERO ── */
 .hero{
   width:100%;position:relative;overflow:hidden;
@@ -596,6 +604,12 @@ canvas.cc{display:none}
 </head>
 <body>
 
+<!-- LOADING -->
+<div id="loading-overlay">
+  <span class="lo-star">⭐</span>
+  <span class="lo-text">Carregando galácticos...</span>
+</div>
+
 <!-- CAMERA MODAL -->
 <div class="cam-modal" id="cam-modal">
   <button class="cam-close" onclick="closeCamera()">✕</button>
@@ -959,7 +973,7 @@ canvas.cc{display:none}
 <button class="music-start-btn" id="music-start-btn" onclick="userStartMusic()">⭐ TOCAR MÚSICA</button>
 <div id="yt-container"><div id="yt-player"></div></div>
 
-<script>
+<script type="module">
 // ═══════════════════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
@@ -983,35 +997,80 @@ const VERSES = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// LOCAL STORAGE HELPERS
+// FIREBASE — banco compartilhado (Firestore). Dados com shared=true ficam no
+// Firestore (visíveis a todos os usuários do site). shared=false (voto de MVP
+// pessoal) fica só no localStorage do próprio celular.
 // ═══════════════════════════════════════════════════════════════
-const LS = {
-  get(k){ try{ const v=localStorage.getItem("gal_"+k); return v?JSON.parse(v):null; }catch(e){return null;} },
-  set(k,v){ try{ localStorage.setItem("gal_"+k,JSON.stringify(v)); }catch(e){} },
-  del(k){ try{ localStorage.removeItem("gal_"+k); }catch(e){} }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBJmnC8iGcly1Ok_i75maBI9O_i1kiU_9E",
+  authDomain: "galaticos-2283d.firebaseapp.com",
+  projectId: "galaticos-2283d",
+  storageBucket: "galaticos-2283d.firebasestorage.app",
+  messagingSenderId: "405226353231",
+  appId: "1:405226353231:web:b8c6e16a05acc27aa9f03a"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+// Coleção "galaticos", um documento por chave (players, mural, ranking, etc.)
+const storageShim = {
+  async get(key, shared){
+    if(!shared){
+      try{
+        const v = localStorage.getItem("gal_local_"+key);
+        return v!==null ? {key,value:v,shared:false} : null;
+      }catch(e){ return null; }
+    }
+    try{
+      const snap = await getDoc(doc(db,"galaticos",key));
+      return snap.exists() ? {key,value:snap.data().value,shared:true} : null;
+    }catch(e){ console.error("Firestore get('"+key+"') falhou:",e); return null; }
+  },
+  async set(key, value, shared){
+    if(!shared){
+      try{ localStorage.setItem("gal_local_"+key, value); return {key,value,shared:false}; }
+      catch(e){ return null; }
+    }
+    try{
+      await setDoc(doc(db,"galaticos",key), {value});
+      return {key,value,shared:true};
+    }catch(e){ console.error("Firestore set('"+key+"') falhou:",e); return null; }
+  }
 };
 
-// ═══════════════════════════════════════════════════════════════
-// STATE (all persisted in localStorage)
-// ═══════════════════════════════════════════════════════════════
-function loadState(){
-  return {
-    players:   LS.get("players")   || [],   // {id,name,presente,position,photo,confirmedAt,streak,lastWeek}
-    champion:  LS.get("champion")  || null, // {name,date,photo}
-    champHist: LS.get("champHist") || [],   // [{name,date,photo,savedAt}]
-    mural:     LS.get("mural")     || [],   // [{id,text,createdAt,createdAtStr}]
-    waitlist:  LS.get("waitlist")  || [],   // [{id,name,joinedAt,joinedAtStr}]
-    ranking:   LS.get("ranking")   || [],   // [{id,name,gols,ast,createdAt}]
-    mvp:       LS.get("mvp")       || null, // {id,status,votes:{},winner}
-    music:     LS.get("music")     || null, // {videoId,name,url} or null=default
-  };
+async function storeGet(key, shared){
+  try{
+    const r = await storageShim.get(key, shared);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){ return null; }
+}
+async function storeSet(key, value, shared){
+  try{ await storageShim.set(key, JSON.stringify(value), shared); }
+  catch(e){ console.error("Erro ao salvar '"+key+"':", e); }
 }
 
-function saveAll(state){
-  Object.keys(state).forEach(k => LS.set(k, state[k]));
+const STATE_KEYS = ["players","champion","champHist","mural","waitlist","ranking","mvp","music"];
+
+async function loadState(){
+  const vals = await Promise.all(STATE_KEYS.map(k=>storeGet(k,true)));
+  const state = {};
+  STATE_KEYS.forEach((k,i)=>{ state[k]=vals[i]; });
+  state.players   = state.players   || [];
+  state.champion  = state.champion  || null;
+  state.champHist = state.champHist || [];
+  state.mural     = state.mural     || [];
+  state.waitlist  = state.waitlist  || [];
+  state.ranking   = state.ranking   || [];
+  state.mvp       = state.mvp       || null;
+  state.music     = state.music     || null;
+  return state;
 }
 
-let S = loadState();
+let S = null;              // preenchido pelo init() antes de qualquer render
+let myMvpVoteName = null;  // voto pessoal deste dispositivo (armazenamento não-compartilhado)
 
 // ═══════════════════════════════════════════════════════════════
 // VERSE
@@ -1085,7 +1144,6 @@ let lastCount = -1;
 function renderCapacity(){
   const presentes = getPresentes();
   const count=presentes.length, vagas=MAX-count, full=count>=MAX;
-  const pct=count/MAX;
 
   if(lastCount!==-1 && lastCount<MAX && count===MAX){
     const last=presentes[presentes.length-1];
@@ -1205,6 +1263,7 @@ function renderMural(){
   if(!items.length){
     preview.innerHTML="";
     tabBox.innerHTML='<div class="mural-empty">Nenhum aviso publicado.</div>';
+    renderAdmMural();
     return;
   }
   const makeItem=(m,cls)=>`<div class="${cls}"><div class="${cls}-text">📌 ${esc(m.text)}</div><div class="${cls}-meta">${esc(m.createdAtStr||"")}</div></div>`;
@@ -1223,18 +1282,18 @@ function renderAdmMural(){
       <button data-mid="${m.id}" class="del-mural" style="background:none;border:none;color:var(--danger)77;font-size:12px;cursor:pointer">✕</button>
     </div>`).join("");
   el.querySelectorAll(".del-mural").forEach(b=>{
-    b.addEventListener("click",()=>{
+    b.addEventListener("click", async ()=>{
       S.mural=S.mural.filter(x=>x.id!==b.dataset.mid);
-      LS.set("mural",S.mural); renderMural();
+      await storeSet("mural",S.mural,true); renderMural();
     });
   });
 }
 
-document.getElementById("adm-mural-add").addEventListener("click",()=>{
+document.getElementById("adm-mural-add").addEventListener("click", async ()=>{
   const txt=document.getElementById("adm-mural-inp").value.trim(); if(!txt) return;
   const now=new Date();
   S.mural.push({id:uid(),text:txt,createdAt:Date.now(),createdAtStr:`${pad(now.getDate())}/${pad(now.getMonth()+1)} às ${pad(now.getHours())}:${pad(now.getMinutes())}`});
-  LS.set("mural",S.mural);
+  await storeSet("mural",S.mural,true);
   document.getElementById("adm-mural-inp").value="";
   renderMural();
   showMsg("adm-mural-msg","Aviso publicado! 📌","var(--ouro-brilho)");
@@ -1259,20 +1318,20 @@ function renderAdmWaitlist(){
       <button data-wid="${w.id}" class="del-wl" style="background:none;border:none;color:var(--danger)77;font-size:12px;cursor:pointer">✕</button>
     </div>`).join("");
   el.querySelectorAll(".del-wl").forEach(b=>{
-    b.addEventListener("click",()=>{
+    b.addEventListener("click", async ()=>{
       S.waitlist=S.waitlist.filter(x=>x.id!==b.dataset.wid);
-      LS.set("waitlist",S.waitlist); renderWaitlist();
+      await storeSet("waitlist",S.waitlist,true); renderWaitlist();
     });
   });
 }
 
-document.getElementById("espera-btn").addEventListener("click",()=>{
+document.getElementById("espera-btn").addEventListener("click", async ()=>{
   const name=(document.getElementById("inp-nome").value||"").trim();
   if(!name){ alert("Digite seu nome no campo do formulário antes de entrar na espera."); return; }
   if(S.waitlist.find(w=>w.name.toLowerCase()===name.toLowerCase())){ alert("Você já está na lista de espera!"); return; }
   const now=new Date();
   S.waitlist.push({id:uid(),name,joinedAt:Date.now(),joinedAtStr:`${pad(now.getDate())}/${pad(now.getMonth()+1)} às ${pad(now.getHours())}:${pad(now.getMinutes())}`});
-  LS.set("waitlist",S.waitlist);
+  await storeSet("waitlist",S.waitlist,true);
   const btn=document.getElementById("espera-btn");
   btn.textContent="✅ Na lista de espera!"; btn.disabled=true;
   renderWaitlist();
@@ -1301,7 +1360,7 @@ function renderRanking(){
   if(!totals.length){ box.innerHTML='<div class="rk-empty">Nenhum registro ainda.</div>'; return; }
   const votes=mvp&&mvp.votes||{};
   const voting=mvp&&mvp.status==="open";
-  const myVote=getMyVote();
+  const myVote=myMvpVoteName;
   const medals=["🥇","🥈","🥉"];
   box.innerHTML=totals.map((p,i)=>`
     <div class="rk-item">
@@ -1318,42 +1377,43 @@ function renderRanking(){
   });
 }
 
-function getMyVote(){ try{ return localStorage.getItem("gal_mvpvote_"+(S.mvp&&S.mvp.id||"")); }catch(e){ return null; } }
-
-function castVote(name){
+async function castVote(name){
   if(!S.mvp||S.mvp.status!=="open") return;
-  const key="gal_mvpvote_"+(S.mvp.id||"");
-  let prev; try{ prev=localStorage.getItem(key); }catch(e){ prev=null; }
+  const prev=myMvpVoteName;
   if(!S.mvp.votes) S.mvp.votes={};
   if(prev&&S.mvp.votes[prev]>0) S.mvp.votes[prev]--;
   S.mvp.votes[name]=(S.mvp.votes[name]||0)+1;
-  LS.set("mvp",S.mvp);
-  try{ localStorage.setItem(key,name); }catch(e){}
+  await storeSet("mvp",S.mvp,true);
+  myMvpVoteName=name;
+  await storeSet("mvpvote_"+S.mvp.id,name,false); // voto pessoal, não-compartilhado
   renderRanking();
 }
 
-document.getElementById("adm-mvp-open").addEventListener("click",()=>{
+document.getElementById("adm-mvp-open").addEventListener("click", async ()=>{
   S.mvp={id:String(Date.now()),status:"open",votes:{},openedAt:Date.now()};
-  LS.set("mvp",S.mvp); renderRanking();
+  await storeSet("mvp",S.mvp,true);
+  myMvpVoteName=null;
+  renderRanking();
   showMsg("adm-mvp-msg","Votação aberta! 🗳️","var(--ouro-brilho)");
 });
-document.getElementById("adm-mvp-close").addEventListener("click",()=>{
+document.getElementById("adm-mvp-close").addEventListener("click", async ()=>{
   if(!S.mvp||S.mvp.status!=="open"){ showMsg("adm-mvp-msg","Nenhuma votação aberta.","#aaa"); return; }
   const votes=S.mvp.votes||{};
   let winner=null,max=-1;
   Object.entries(votes).forEach(([n,c])=>{ if(c>max){max=c;winner=n;} });
   S.mvp={...S.mvp,status:"closed",winner:winner||null};
-  LS.set("mvp",S.mvp); renderRanking();
+  await storeSet("mvp",S.mvp,true);
+  renderRanking();
   showMsg("adm-mvp-msg",winner?`MVP: ${winner} 🎉`:"Encerrado sem votos.","var(--ouro-brilho)");
 });
 
-document.getElementById("adm-rk-add").addEventListener("click",()=>{
+document.getElementById("adm-rk-add").addEventListener("click", async ()=>{
   const name=document.getElementById("adm-rk-player").value;
   const gols=Number(document.getElementById("adm-rk-gols").value)||0;
   const ast=Number(document.getElementById("adm-rk-ast").value)||0;
   if(!name) return;
   S.ranking.push({id:uid(),name,gols,ast,createdAt:Date.now()});
-  LS.set("ranking",S.ranking);
+  await storeSet("ranking",S.ranking,true);
   document.getElementById("adm-rk-gols").value="";
   document.getElementById("adm-rk-ast").value="";
   renderRanking();
@@ -1444,7 +1504,6 @@ function renderAll(){
   renderRanking();
   populateRkSelect();
 }
-renderAll();
 
 // ═══════════════════════════════════════════════════════════════
 // TABS
@@ -1521,13 +1580,16 @@ document.getElementById("pos-grid").addEventListener("click",e=>{
 });
 document.getElementById("inp-nome").addEventListener("input",validate);
 
-document.getElementById("submit-btn").addEventListener("click",()=>{
+document.getElementById("submit-btn").addEventListener("click", async ()=>{
   const name=document.getElementById("inp-nome").value.trim();
   if(!name||!selPos) return;
   const presentes=getPresentes();
   if(presentes.length>=MAX){ renderCapacity(); return; }
   const btn=document.getElementById("submit-btn");
   btn.textContent="VERIFICANDO..."; btn.disabled=true;
+  // Compara com o elenco compartilhado (S.players), que agora vem do storage
+  // compartilhado — então um nome cadastrado pelo ADM em qualquer dispositivo
+  // é reconhecido no celular de qualquer jogador.
   const existing=S.players.find(p=>p.name&&p.name.toLowerCase()===name.toLowerCase());
   if(!existing){
     document.getElementById("err-box").style.display="block";
@@ -1550,7 +1612,7 @@ document.getElementById("submit-btn").addEventListener("click",()=>{
   existing.photo=playerPhoto||null;
   existing.streak=streak;
   existing.lastWeek=thisWeek;
-  LS.set("players",S.players);
+  await storeSet("players",S.players,true);
   confirmedId=existing.id;
   document.getElementById("form-area").style.display="none";
   document.getElementById("success-area").style.display="block";
@@ -1560,12 +1622,12 @@ document.getElementById("submit-btn").addEventListener("click",()=>{
   renderAll();
 });
 
-document.getElementById("cancel-btn").addEventListener("click",()=>{
+document.getElementById("cancel-btn").addEventListener("click", async ()=>{
   if(!confirmedId) return;
   if(!confirm("Tem certeza que quer cancelar sua presença?")) return;
   const p=S.players.find(x=>x.id===confirmedId);
   if(p) p.presente=false;
-  LS.set("players",S.players);
+  await storeSet("players",S.players,true);
   document.getElementById("success-area").style.display="none";
   document.getElementById("form-area").style.display="block";
   document.getElementById("submit-btn").textContent="CONFIRMAR PRESENÇA";
@@ -1626,16 +1688,16 @@ document.getElementById("adm-champ-foto").addEventListener("change",()=>{
   const f=document.getElementById("adm-champ-foto").files[0]; if(!f) return;
   const r=new FileReader(); r.onload=e=>{ champPhotoB64=e.target.result; document.getElementById("adm-champ-prev").src=champPhotoB64; document.getElementById("adm-champ-prev").classList.add("vis"); document.getElementById("champ-upload-hint").textContent=f.name; }; r.readAsDataURL(f);
 });
-document.getElementById("adm-save-champ").addEventListener("click",()=>{
+document.getElementById("adm-save-champ").addEventListener("click", async ()=>{
   const name=document.getElementById("adm-champ-nome").value.trim();
   if(!name){ showMsg("adm-champ-msg","Informe o nome.","#aaa"); return; }
   const champ={name,date:document.getElementById("adm-champ-data").value.trim(),photo:champPhotoB64||null};
-  S.champion=champ; LS.set("champion",S.champion);
-  S.champHist=[...S.champHist,{...champ,savedAt:Date.now()}]; LS.set("champHist",S.champHist);
+  S.champion=champ; await storeSet("champion",S.champion,true);
+  S.champHist=[...S.champHist,{...champ,savedAt:Date.now()}]; await storeSet("champHist",S.champHist,true);
   renderChampion(); showMsg("adm-champ-msg","Campeão salvo! ✅","var(--ouro-brilho)");
 });
-document.getElementById("adm-clear-champ").addEventListener("click",()=>{
-  S.champion=null; LS.set("champion",null);
+document.getElementById("adm-clear-champ").addEventListener("click", async ()=>{
+  S.champion=null; await storeSet("champion",null,true);
   document.getElementById("adm-champ-nome").value=""; document.getElementById("adm-champ-data").value="";
   champPhotoB64=null; document.getElementById("adm-champ-prev").src=""; document.getElementById("adm-champ-prev").classList.remove("vis");
   document.getElementById("champ-upload-hint").textContent="Toque para escolher foto";
@@ -1643,14 +1705,14 @@ document.getElementById("adm-clear-champ").addEventListener("click",()=>{
 });
 
 // Gerenciar jogadores
-function admAddPlayer(){
+async function admAddPlayer(){
   const name=document.getElementById("adm-add-player").value.trim(); if(!name) return;
   if(S.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){ showMsg("adm-player-msg","Jogador já existe!","#aaa"); return; }
   S.players.push({id:uid(),name,presente:false,streak:0,lastWeek:0});
-  LS.set("players",S.players);
+  await storeSet("players",S.players,true);
   document.getElementById("adm-add-player").value="";
   renderAdmPlayers(); populateRkSelect();
-  showMsg("adm-player-msg","Adicionado! ✅","var(--ouro-brilho)");
+  showMsg("adm-player-msg","Adicionado! ✅ Agora "+name+" já aparece como nome encontrado no formulário.","var(--ouro-brilho)");
 }
 function renderAdmPlayers(){
   const el=document.getElementById("adm-player-list"); if(!el) return;
@@ -1661,17 +1723,17 @@ function renderAdmPlayers(){
       <button data-pid="${p.id}" class="del-player" style="background:none;border:none;color:var(--danger)77;font-size:12px;cursor:pointer">✕</button>
     </div>`).join("");
   el.querySelectorAll(".del-player").forEach(b=>{
-    b.addEventListener("click",()=>{
+    b.addEventListener("click", async ()=>{
       S.players=S.players.filter(x=>x.id!==b.dataset.pid);
-      LS.set("players",S.players); renderAdmPlayers(); renderAll(); populateRkSelect();
+      await storeSet("players",S.players,true); renderAdmPlayers(); renderAll(); populateRkSelect();
     });
   });
 }
 
-document.getElementById("adm-reset-all").addEventListener("click",()=>{
+document.getElementById("adm-reset-all").addEventListener("click", async ()=>{
   if(!confirm("Resetar TODAS as presenças (não apaga jogadores, apenas confirmar=false)?")) return;
   S.players.forEach(p=>{ p.presente=false; p.confirmedAt=null; p.photo=null; });
-  LS.set("players",S.players); renderAll();
+  await storeSet("players",S.players,true); renderAll();
   showMsg("adm-reset-msg","Lista resetada. ✅","var(--ouro-brilho)");
 });
 
@@ -1723,20 +1785,19 @@ function initMusic(){
   else if(!userInteracted) showMusicBtn();
   else if(ytReady) startYT(vid);
 }
-initMusic();
 
-function saveMusic(){
+async function saveMusic(){
   const url=document.getElementById("adm-music-url").value.trim();
   const name=document.getElementById("adm-music-name").value.trim();
   if(!url){ resetMusic(); return; }
   const vid=extractYTId(url);
   if(!vid){ showMsg("adm-music-msg","Link inválido.","var(--danger)"); return; }
   S.music={videoId:vid,url,name:name||"Música do Baba"};
-  LS.set("music",S.music); initMusic();
+  await storeSet("music",S.music,true); initMusic();
   showMsg("adm-music-msg","Música salva! 🎵","var(--ouro-brilho)");
 }
-function resetMusic(){
-  S.music=null; LS.set("music",null);
+async function resetMusic(){
+  S.music=null; await storeSet("music",null,true);
   document.getElementById("adm-music-url").value=""; document.getElementById("adm-music-name").value="";
   initMusic(); showMsg("adm-music-msg","Voltou ao padrão.","var(--ouro-brilho)");
 }
@@ -1747,6 +1808,38 @@ function resetMusic(){
 function esc(s){ const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
 function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
 function showMsg(id,txt,color){ const el=document.getElementById(id); if(!el) return; el.textContent=txt; el.style.color=color; setTimeout(()=>el.textContent="",3000); }
+
+// ═══════════════════════════════════════════════════════════════
+// EXPÕE FUNÇÕES USADAS EM onclick="" DO HTML
+// (necessário porque este script agora é um módulo ES, que não expõe
+// funções no escopo global automaticamente)
+// ═══════════════════════════════════════════════════════════════
+window.closeCamera=closeCamera;
+window.snapPhoto=snapPhoto;
+window.openGallery=openGallery;
+window.closeGallery=closeGallery;
+window.triggerFile=triggerFile;
+window.openCamera=openCamera;
+window.removePhoto=removePhoto;
+window.handlePhotoUpload=handlePhotoUpload;
+window.saveMusic=saveMusic;
+window.resetMusic=resetMusic;
+window.admAddPlayer=admAddPlayer;
+window.toggleMusic=toggleMusic;
+window.userStartMusic=userStartMusic;
+
+// ═══════════════════════════════════════════════════════════════
+// INIT — carrega o estado compartilhado antes de renderizar qualquer coisa
+// ═══════════════════════════════════════════════════════════════
+async function init(){
+  S = await loadState();
+  if(S.mvp){ myMvpVoteName = await storeGet("mvpvote_"+S.mvp.id, false); }
+  renderAll();
+  initMusic();
+  const ov=document.getElementById("loading-overlay");
+  if(ov) ov.remove();
+}
+init();
 </script>
 </body>
 </html>
