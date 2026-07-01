@@ -84,6 +84,14 @@
     .import-preview-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#ffffff05;margin-bottom:5px;font-size:13px}
     .gold-divider{height:1px;background:linear-gradient(90deg,transparent,var(--gold)55,transparent);margin:14px 0}
 
+    /* ---- Team size selector ---- */
+    .size-selector{display:flex;gap:8px;margin-bottom:16px}
+    .size-btn{flex:1;padding:14px 6px;border-radius:12px;border:1.5px solid var(--hairline);background:#ffffff06;color:#766f5c;font-family:'Bebas Neue',sans-serif;cursor:pointer;-webkit-appearance:none;text-align:center;transition:all 0.2s}
+    .size-btn .num{display:block;font-size:26px;letter-spacing:1px;line-height:1}
+    .size-btn .lbl{display:block;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;opacity:0.8}
+    .size-btn.active{border-color:var(--gold);background:linear-gradient(180deg,#D4AF3722,#D4AF3708);color:var(--gold-bright);box-shadow:0 2px 16px #D4AF3722}
+    .size-info{text-align:center;font-size:11px;color:var(--text-dim);margin-bottom:18px;letter-spacing:0.3px}
+
     /* ---- Draw lottery animation ---- */
     .lottery-wrap{background:radial-gradient(ellipse at 50% 30%,#1c1708,#0a0a0a 70%);border:1.5px solid var(--hairline);border-radius:18px;padding:28px 16px 22px;margin-bottom:18px;overflow:hidden;position:relative;min-height:280px}
     .lottery-title{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--gold-bright);margin-bottom:18px;opacity:0.9}
@@ -114,7 +122,6 @@
 <div id="app"></div>
 <script>
 const POSITIONS=["Goleiro","Defesa","Meio-campo","Atacante"];
-// Galácticos palette: gold/black premium, positions distinguished by warm metal tones instead of generic rainbow
 const POS_COLORS={
   "Goleiro":{bg:"#F4D160",glow:"#F4D16030"},
   "Defesa":{bg:"#C0C0C0",glow:"#C0C0C030"},
@@ -128,23 +135,28 @@ const ATTRS=[
   {key:"finalizacao",label:"Finalização",icon:"🎯",color:"#E8B84B"},
   {key:"marcacao",label:"Marcação",icon:"🛡️",color:"#9A7B1A"},
 ];
-// Team themes: each squad named like a "Galáticos" era, gold-tier identity
 const TEAM_THEMES=[
   {name:"Galácticos Ouro",color:"#D4AF37",emoji:"👑"},
   {name:"Galácticos Prata",color:"#C0C0C0",emoji:"⚪"},
   {name:"Galácticos Bronze",color:"#B5763C",emoji:"🟤"},
   {name:"Galácticos Platina",color:"#E5E4E2",emoji:"⚫"},
+  {name:"Galácticos Rubi",color:"#C0392B",emoji:"🔴"},
+  {name:"Galácticos Safira",color:"#2E86C1",emoji:"🔵"},
 ];
-const PLAYERS_PER_TEAM=5;
+const TEAM_SIZE_OPTIONS=[5,6,7];
+const DEFAULT_TEAM_SIZE=5;
 
 function loadPlayers(){try{return JSON.parse(localStorage.getItem("galaticosPlayers")||"[]");}catch(e){return[];}}
 function savePlayers(p){try{localStorage.setItem("galaticosPlayers",JSON.stringify(p));}catch(e){}}
+function loadTeamSize(){try{const v=parseInt(localStorage.getItem("galaticosTeamSize"));return TEAM_SIZE_OPTIONS.includes(v)?v:DEFAULT_TEAM_SIZE;}catch(e){return DEFAULT_TEAM_SIZE;}}
+function saveTeamSize(n){try{localStorage.setItem("galaticosTeamSize",String(n));}catch(e){}}
 function totalScore(p){return ATTRS.reduce((s,a)=>s+(p.attrs?.[a.key]||0),0);}
 function posColor(pos){return POS_COLORS[pos]||{bg:"#888",glow:"#88888830"};}
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 
-function balancedDraw(players){
+function balancedDraw(players,teamSize){
+  const size=TEAM_SIZE_OPTIONS.includes(teamSize)?teamSize:DEFAULT_TEAM_SIZE;
   const sorted=[...players].sort((a,b)=>totalScore(b)-totalScore(a));
   let i=0;
   const final=[...sorted];
@@ -156,7 +168,7 @@ function balancedDraw(players){
     chunk.forEach((p,k)=>{final[i+k]=p;});
     i=j;
   }
-  const numTeams=Math.max(2,Math.ceil(final.length/PLAYERS_PER_TEAM));
+  const numTeams=Math.max(2,Math.ceil(final.length/size));
   const teams=TEAM_THEMES.slice(0,numTeams).map(t=>({...t,players:[],total:0}));
   final.forEach((p,i)=>{
     const round=Math.floor(i/numTeams),pos=i%numTeams;
@@ -167,8 +179,6 @@ function balancedDraw(players){
 }
 
 // ---- WhatsApp list parser ----
-// Strips header lines (emoji-led info: schedule, location, PIX, price, rules) and
-// numbered roster lines like "1. Lucas de Souza ✅" / "12. Gustavo (Convidado) ❌"
 function parseWhatsappList(raw){
   const lines=raw.split(/\r?\n/);
   const results=[];
@@ -177,22 +187,18 @@ function parseWhatsappList(raw){
     const line=lineRaw.trim();
     if(!line) continue;
     const m=line.match(numberedLine);
-    if(!m) continue; // skip header/rules/footer lines, only numbered entries are players
+    if(!m) continue;
     let rest=m[2];
-    // detect confirmation marker anywhere in the line
     let presente=null;
     if(/✅|✔️|✔/.test(rest)) presente=true;
     if(/❌|✖️|✖/.test(rest)) presente=false;
-    // detect "devendo" marker (owing) - treat as present but flagged
     const devendo=/⚠️|⚠/.test(rest);
-    // detect convidado/guest tag in parentheses or plain text
     const convidado=/convidado/i.test(rest);
-    // strip all known symbols/markers to isolate the name
     let name=rest
       .replace(/[✅✔️✔❌✖️✖⚠️⚠⚡]/g,'')
       .replace(/\(\s*convidado\s*\)/gi,'')
       .replace(/convidado/gi,'')
-      .replace(/[⁠]/g,'') // zero-width / invisible chars often pasted from WhatsApp
+      .replace(/[⁠]/g,'')
       .replace(/\s{2,}/g,' ')
       .trim();
     name=name.replace(/^[-–—:]+|[-–—:]+$/g,'').trim();
@@ -202,7 +208,7 @@ function parseWhatsappList(raw){
   return results;
 }
 
-let state={tab:"jogadores",players:loadPlayers(),modal:null,filterPos:"Todos",drawn:null,drawing:false,importOpen:false,importText:"",importPreview:null,lotteryBalls:[],lotteryBall:null};
+let state={tab:"jogadores",players:loadPlayers(),modal:null,filterPos:"Todos",drawn:null,drawing:false,importOpen:false,importText:"",importPreview:null,lotteryNames:[],teamSize:loadTeamSize()};
 
 function attrsHTML(p,small=false){
   if(!p.attrs||ATTRS.every(a=>!(p.attrs[a.key]))){ return `<span class="pending-badge">⏳ SEM AVALIAÇÃO</span>`; }
@@ -259,6 +265,11 @@ function modalHTML(){
           return `<button class="pos-btn" onclick="setModalPos('${pos2}')" style="border:1.5px solid ${act?c2.bg:'#ffffff18'};background:${act?c2.bg+'30':'#ffffff08'};color:${act?c2.bg:'#766f5c'}">${pos2}</button>`;
         }).join('')}</div>
       </div>
+      <div class="field" style="display:flex;align-items:center;gap:10px">
+        <label style="margin:0;flex:1">Presente / Convidado</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#a99a6e"><input type="checkbox" id="f-presente" ${p?.presente!==false?'checked':''} style="width:auto"/> Presente</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#a99a6e"><input type="checkbox" id="f-convidado" ${p?.convidado?'checked':''} style="width:auto"/> Convidado</label>
+      </div>
       <div style="background:#ffffff06;border:1px solid var(--hairline);border-radius:12px;padding:14px;margin-bottom:4px">
         <div style="font-size:11px;font-weight:700;color:#a99a6e;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">📊 CARACTERÍSTICAS (1-5)</div>
         ${ATTRS.map(a=>`
@@ -267,7 +278,7 @@ function modalHTML(){
               <span style="font-size:12px;font-weight:700;color:${a.color}">${a.icon} ${a.label}</span>
               <span id="val-${a.key}" style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:${a.color}">${attrs[a.key]||1}</span>
             </div>
-            <input type="range" min="1" max="5" value="${attrs[a.key]||1}" 
+            <input type="range" min="1" max="5" value="${attrs[a.key]||1}"
               class="attr-slider" id="sl-${a.key}"
               oninput="document.getElementById('val-${a.key}').textContent=this.value"
               style="--c:${a.color};accent-color:${a.color}"/>
@@ -287,314 +298,228 @@ function modalHTML(){
 function importModalHTML(){
   const preview=state.importPreview;
   return `<div class="overlay" onclick="if(event.target===this)closeImport()">
-    <div class="modal" style="max-width:480px">
-      <div class="modal-title">📲 Importar Lista do WhatsApp</div>
+    <div class="modal">
+      <div class="modal-title">📋 Importar lista do WhatsApp</div>
       ${!preview?`
         <div class="field">
-          <label>Cole a lista completa abaixo</label>
-          <textarea id="import-textarea" placeholder="Cole aqui a mensagem do grupo, com a numeração 1. 2. 3...">${state.importText}</textarea>
-        </div>
-        <div style="font-size:11px;color:#766f5c;margin-bottom:14px;line-height:1.5">
-          O app identifica automaticamente os nomes numerados, ignora cabeçalho/regras/PIX, e marca quem confirmou (✅), quem não vai (❌) e quem é convidado.
+          <label>Cole a lista aqui</label>
+          <textarea id="f-import" placeholder="1. Lucas de Souza ✅&#10;2. Gustavo (Convidado) ❌">${state.importText||''}</textarea>
         </div>
         <div class="modal-actions">
           <button class="cancel-btn" onclick="closeImport()">Cancelar</button>
-          <button class="save-btn" onclick="runImportPreview()" style="background:linear-gradient(135deg,var(--gold-bright),var(--gold-deep))">LER LISTA</button>
+          <button class="save-btn" onclick="previewImport()" style="background:linear-gradient(135deg,var(--gold-bright),var(--gold-deep))">PRÉ-VISUALIZAR</button>
         </div>
       `:`
-        <div style="font-size:12px;color:#a99a6e;margin-bottom:12px;font-weight:700">${preview.length} jogador(es) encontrado(s):</div>
-        <div style="max-height:300px;overflow-y:auto;margin-bottom:8px">
-          ${preview.map((pl,i)=>`
-            <div class="import-preview-row">
-              <span style="color:#f2ead8">${pl.name}${pl.convidado?' <span style="color:#cbb87c;font-size:10px">★ convidado</span>':''}${pl.devendo?' <span style="color:#ffb74d;font-size:10px">⚠ devendo</span>':''}</span>
-              <span style="color:${pl.presente?'#2ECC71':'#ff6666'};font-weight:700;font-size:11px">${pl.presente?'✅ vai':'❌ não vai'}</span>
-            </div>
-          `).join('')}
-        </div>
-        <div class="gold-divider"></div>
-        <div style="font-size:11px;color:#766f5c;margin-bottom:14px">
-          Os jogadores serão adicionados ao elenco como <strong style="color:#cbb87c">Goleiro</strong> por padrão — você ajusta a posição e avalia as características depois, na aba Elenco.
+        <div class="section-label">${preview.length} jogador(es) encontrado(s)</div>
+        <div style="max-height:320px;overflow-y:auto;margin-bottom:12px">
+          ${preview.map(pl=>`<div class="import-preview-row">
+            <span>${pl.name} ${pl.convidado?'<span style="color:#cbb87c">★</span>':''}</span>
+            <span>${pl.presente?'✅':'❌'}</span>
+          </div>`).join('')}
         </div>
         <div class="modal-actions">
-          <button class="cancel-btn" onclick="state.importPreview=null;renderAndBind()">⬅ Voltar</button>
-          <button class="save-btn" onclick="confirmImport()" style="background:linear-gradient(135deg,var(--gold-bright),var(--gold-deep))">ADICIONAR AO ELENCO</button>
+          <button class="cancel-btn" onclick="state.importPreview=null;render()">Voltar</button>
+          <button class="save-btn" onclick="confirmImport()" style="background:linear-gradient(135deg,var(--gold-bright),var(--gold-deep))">IMPORTAR TODOS</button>
         </div>
       `}
     </div>
   </div>`;
 }
 
-function render(){
-  const {tab,players,filterPos,drawn,drawing,importOpen}=state;
-  const presentes=players.filter(p=>p.presente);
-  const pendingCount=players.filter(p=>!p.attrs||ATTRS.every(a=>!p.attrs[a.key])).length;
-  const presenteCount=presentes.length;
-
-  let html=`<div class="header"><div class="header-inner">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:2px">
-      <div class="crest">
-        <span class="crest-emblem">👑</span>
-        <div>
-          <div class="logo">BABA DOS GALÁCTICOS</div>
-          <div class="subtag">${players.length} jogadores · ${presenteCount} confirmados</div>
-        </div>
-      </div>
+function jogadoresTabHTML(){
+  const filtered=state.filterPos==="Todos"?state.players:state.players.filter(p=>p.position===state.filterPos);
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <div class="section-label" style="margin:0">${state.players.length} jogador(es)</div>
       <div style="display:flex;gap:6px">
-        <button class="btn-ghost" onclick="openImport()">📲 LISTA</button>
-        ${tab==="jogadores"?`<button class="btn-add" onclick="openModal()">+ ADD</button>`:''}
+        <button class="btn-ghost" onclick="openImport()">📋 Importar</button>
+        <button class="btn-add" onclick="openAddModal()">➕ Novo</button>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tab-btn ${tab==='jogadores'?'active':''}" onclick="setTab('jogadores')">👤 ELENCO${pendingCount>0?` <span style="background:var(--gold-bright);color:#0a0a0a;border-radius:8px;padding:0 5px;font-size:9px">${pendingCount}</span>`:''}</button>
-      <button class="tab-btn ${tab==='presenca'?'active':''}" onclick="setTab('presenca')">✅ PRESENÇA${presenteCount>0?` <span style="background:#2ECC71;color:#000;border-radius:8px;padding:0 5px;font-size:9px">${presenteCount}</span>`:''}</button>
-      <button class="tab-btn ${tab==='sorteio'?'active':''}" onclick="setTab('sorteio')">⚽ SORTEAR</button>
-    </div>
-  </div></div><div class="content">`;
-
-  if(tab==="jogadores"){
-    const filtered=filterPos==="Todos"?players:players.filter(p=>p.position===filterPos);
-    html+=`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px">
-      ${["Todos",...POSITIONS].map(pos=>{const c=pos==="Todos"?"#D4AF37":posColor(pos).bg;const act=filterPos===pos;
-        return `<button onclick="setFilter('${pos}')" style="padding:4px 10px;border-radius:6px;border:1.5px solid ${act?c:'#ffffff15'};background:${act?c+'25':'#ffffff08'};color:${act?c:'#766f5c'};font-weight:700;font-size:10px;cursor:pointer;-webkit-appearance:none">${pos}</button>`;
+    <div class="pos-btns" style="margin-bottom:16px">
+      ${["Todos",...POSITIONS].map(pos=>{
+        const active=state.filterPos===pos;
+        const c=pos==="Todos"?{bg:"#D4AF37"}:posColor(pos);
+        return `<button class="pos-btn" onclick="setFilterPos('${pos}')" style="border:1.5px solid ${active?c.bg:'#ffffff18'};background:${active?c.bg+'30':'#ffffff08'};color:${active?c.bg:'#766f5c'}">${pos}</button>`;
       }).join('')}
-    </div>`;
-    if(!filtered.length)html+=`<div class="empty"><div style="font-size:36px;margin-bottom:10px">⚽</div><div style="font-weight:700">Nenhum jogador</div><div style="font-size:12px;margin-top:6px">Toque em "📲 LISTA" para importar do WhatsApp</div></div>`;
-    else filtered.forEach(p=>{html+=playerCardHTML(p);});
-  }
-
-  if(tab==="presenca"){
-    const ausentes=players.filter(p=>!p.presente);
-    html+=`<div style="background:#2ECC7110;border:1px solid #2ECC7130;border-radius:12px;padding:13px 15px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#2ECC71;line-height:1">${presentes.length}</div><div style="font-size:10px;color:#2ECC71bb;font-weight:700;text-transform:uppercase">Confirmados</div></div>
-      <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ff6666;line-height:1">${ausentes.length}</div><div style="font-size:10px;color:#ff6666bb;font-weight:700;text-transform:uppercase">Pendentes</div></div>
-    </div>`;
-    if(presentes.length){
-      html+=`<div class="section-label" style="color:#2ECC71;margin-bottom:10px">✅ CONFIRMADOS (${presentes.length})</div>`;
-      presentes.forEach(p=>{
-        const c=posColor(p.position);
-        html+=`<div style="background:linear-gradient(135deg,#162e1a,#1a2e1a);border:1.5px solid #2ECC7140;border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,${c.bg},${c.bg}88);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;color:#0a0a0a;font-weight:900;flex-shrink:0">${p.name.charAt(0)}</div>
-          <div style="flex:1"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <span style="font-family:'Bebas Neue',sans-serif;font-size:15px;color:#f2ead8">${p.name}</span>
-            <span class="pos-badge" style="background:${c.bg}">${p.position}</span>
-            ${p.convidado?'<span class="convidado-badge">★ convidado</span>':''}
-          </div><div style="margin-top:4px">${attrsHTML(p,true)}</div></div>
-          <button onclick="cancelarPresenca('${p.id}')" style="background:#ff444415;border:1px solid #ff444430;border-radius:6px;color:#ff6666;cursor:pointer;font-size:10px;padding:5px 8px;font-weight:700;white-space:nowrap;-webkit-appearance:none">✕ RETIRAR</button>
-        </div>`;
-      });
-    }
-    if(ausentes.length){
-      html+=`<div class="section-label" style="margin:14px 0 10px">⏳ PENDENTES (${ausentes.length})</div>`;
-      ausentes.forEach(p=>{
-        const c=posColor(p.position);
-        html+=`<div style="background:#ffffff05;border:1.5px solid #ffffff0d;border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px;margin-bottom:8px;opacity:0.65">
-          <div style="width:36px;height:36px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;color:#666;font-weight:900;flex-shrink:0">${p.name.charAt(0)}</div>
-          <div style="flex:1"><span style="font-family:'Bebas Neue',sans-serif;font-size:15px;color:#666">${p.name}</span>
-            <span class="pos-badge" style="background:#333;color:#666;margin-left:6px">${p.position}</span></div>
-          <button onclick="marcarPresente('${p.id}')" style="background:#2ECC7115;border:1px solid #2ECC7130;border-radius:6px;color:#2ECC71;cursor:pointer;font-size:10px;padding:5px 8px;font-weight:700;white-space:nowrap;-webkit-appearance:none">+ MARCAR</button>
-        </div>`;
-      });
-    }
-    if(!players.length)html+=`<div class="empty"><div style="font-size:36px;margin-bottom:10px">📋</div><div style="font-weight:700">Nenhum jogador cadastrado</div><div style="font-size:12px;margin-top:6px">Toque em "📲 LISTA" para importar do WhatsApp</div></div>`;
-  }
-
-  if(tab==="sorteio"){
-    const pool=presentes.filter(p=>p.attrs&&ATTRS.some(a=>p.attrs[a.key]>0));
-    const naoAvaliados=presentes.length-pool.length;
-    const numTeams=Math.max(2,Math.ceil(pool.length/PLAYERS_PER_TEAM));
-    const canDraw=pool.length>=PLAYERS_PER_TEAM;
-
-    html+=`<div style="background:#ffffff05;border:1px solid var(--hairline);border-radius:14px;padding:14px;margin-bottom:16px">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:#a99a6e;margin-bottom:8px">📊 PRONTOS PARA O SORTEIO</div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div><span style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold-bright)">${pool.length}</span><span style="font-size:12px;color:#766f5c;margin-left:6px">jogadores avaliados</span></div>
-        <div style="font-size:11px;color:#766f5c">${numTeams} times de ~${PLAYERS_PER_TEAM}</div>
-      </div>
-      ${naoAvaliados>0?`<div style="font-size:11px;color:var(--gold-bright);margin-top:8px">⚠️ ${naoAvaliados} confirmado(s) ainda sem avaliação — vá em ELENCO e toque em "AVALIAR"</div>`:''}
-    </div>`;
-
-    if(drawing){
-      html+=lotteryHTML();
-    } else if(!drawn){
-      html+=`<button class="draw-btn ${canDraw?'ready':'disabled'}" ${canDraw?'onclick="doDraw()"':''}>
-        ${canDraw?`👑 SORTEAR TIMES`:`Mínimo ${PLAYERS_PER_TEAM} jogadores avaliados`}
-      </button>`;
-    } else {
-      drawn.forEach((team,teamIdx)=>{
-        html+=`<div class="team-card revealing" style="--tc:${team.color};animation-delay:${teamIdx*0.12}s">
-          <div style="background:linear-gradient(135deg,${team.color}22,${team.color}08);padding:13px 15px;display:flex;align-items:center;justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:18px">${team.emoji}</span>
-              <span style="font-family:'Cinzel',serif;font-weight:800;font-size:15px;color:${team.color};letter-spacing:0.5px">${team.name}</span>
-            </div>
-            <span style="font-size:11px;color:#a99a6e;font-weight:700">Força: ${team.total}</span>
-          </div>
-          <div style="background:#00000030;padding:8px">
-            ${team.players.map(p=>{const c=posColor(p.position);
-              return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px">
-                <div style="width:26px;height:26px;border-radius:50%;background:${c.bg};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#0a0a0a;font-family:'Bebas Neue',sans-serif;flex-shrink:0">${p.name.charAt(0)}</div>
-                <span style="font-size:13px;color:#f2ead8;flex:1">${p.name}</span>
-                <span style="font-size:9px;color:${c.bg};font-weight:700">${p.position}</span>
-                <span style="font-size:10px;color:var(--gold-bright);font-weight:700">${totalScore(p)}</span>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>`;
-      });
-      html+=`<button class="reshuffle-btn" onclick="doDraw()">🔄 SORTEAR DE NOVO</button>`;
-    }
-  }
-
-  html+="</div>";
-  document.getElementById("app").innerHTML=html+(state.modal?modalHTML():'')+(state.importOpen?importModalHTML():'');
+    </div>
+    ${filtered.length?filtered.map(playerCardHTML).join(''):`<div class="empty">⚽<br/><br/>Nenhum jogador ainda.<br/>Adicione ou importe da lista do WhatsApp.</div>`}
+  `;
 }
 
-function lotteryHTML(){
-  const ball=state.lotteryBall||{};
-  const colors=["#D4AF37","#F4D160","#C0C0C0","#E8B84B","#9A7B1A"];
-  const balls=(state.lotteryBalls||[]).map((p,i)=>
-    `<div class="lottery-ball" style="background:${colors[i%colors.length]};animation-delay:${(i*0.07)%0.6}s">${p.name.charAt(0)}</div>`
-  ).join('');
-  return `<div class="lottery-wrap">
-    <div class="lottery-title">👑 SORTEANDO OS GALÁCTICOS 👑</div>
-    <div class="lottery-drum">${balls}</div>
-    <div class="lottery-status">${ball.text?`<span class="name-pop">${ball.text}</span>`:'embaralhando o elenco...'}</div>
+function teamCardHTML(team,idx,revealing){
+  return `<div class="team-card ${revealing?'revealing':''}" style="--tc:${team.color}">
+    <div style="background:linear-gradient(135deg,${team.color}25,${team.color}08);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid ${team.color}30">
+      <span style="font-family:'Cinzel',serif;font-weight:800;font-size:15px;color:${team.color}">${team.emoji} ${team.name}</span>
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;color:${team.color}">FORÇA ${team.total}</span>
+    </div>
+    <div style="padding:8px 12px">
+      ${team.players.map(p=>{
+        const c=posColor(p.position);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff08">
+          <span style="width:8px;height:8px;border-radius:50%;background:${c.bg};flex-shrink:0"></span>
+          <span style="flex:1;font-size:13px">${p.name}</span>
+          <span style="font-size:10px;color:#766f5c">${p.position}</span>
+          <span style="font-size:11px;color:var(--gold-bright);font-weight:700">${totalScore(p)}</span>
+        </div>`;
+      }).join('')}
+    </div>
   </div>`;
 }
 
-function renderAndBind(){
-  render();
-  const ta=document.getElementById('import-textarea');
-  if(ta){ ta.addEventListener('input',e=>{state.importText=e.target.value;}); }
+function sorteioTabHTML(){
+  const evaluated=state.players.filter(p=>p.attrs&&ATTRS.some(a=>p.attrs[a.key]));
+  const canDraw=evaluated.length>=2 && !state.drawing;
+  if(state.drawing){
+    return `
+      <div class="lottery-wrap">
+        <div class="lottery-title">🎰 SORTEANDO OS TIMES</div>
+        <div class="lottery-drum" id="lottery-drum"></div>
+        <div class="lottery-status" id="lottery-status">Embaralhando...</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="section-label">Jogadores por time</div>
+    <div class="size-selector">
+      ${TEAM_SIZE_OPTIONS.map(n=>`
+        <button class="size-btn ${state.teamSize===n?'active':''}" onclick="setTeamSize(${n})">
+          <span class="num">${n}</span>
+          <span class="lbl">por time</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="size-info">${evaluated.length} jogador(es) avaliado(s) · ${Math.max(2,Math.ceil(Math.max(evaluated.length,1)/state.teamSize))} time(s) previsto(s)</div>
+    <button class="draw-btn ${canDraw?'ready':'disabled'}" ${canDraw?'onclick="startDraw()"':''}>
+      🎲 SORTEAR TIMES
+    </button>
+    ${evaluated.length<2?`<div class="empty">⏳<br/><br/>Avalie pelo menos 2 jogadores<br/>na aba "Jogadores" para sortear.</div>`:''}
+    ${state.drawn?`
+      <div class="gold-divider"></div>
+      <div class="section-label">Times sorteados</div>
+      ${state.drawn.map((t,i)=>teamCardHTML(t,i,false)).join('')}
+      <button class="reshuffle-btn" onclick="startDraw()">🔀 SORTEAR NOVAMENTE</button>
+    `:''}
+  `;
 }
 
-// ---- actions ----
-function setTab(t){
-  if(state.drawing) return; // evita trocar de aba no meio da animação de sorteio
-  state.tab=t;state.drawn=null;renderAndBind();
+function headerHTML(){
+  return `
+    <div class="header">
+      <div class="header-inner">
+        <div class="crest">
+          <span class="crest-emblem">👑</span>
+          <div>
+            <div class="logo">BABA DOS GALÁCTICOS</div>
+            <div class="subtag">Peladeiros de elite</div>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn ${state.tab==='jogadores'?'active':''}" onclick="setTab('jogadores')">👤 JOGADORES</button>
+          <button class="tab-btn ${state.tab==='sorteio'?'active':''}" onclick="setTab('sorteio')">🎲 SORTEIO</button>
+        </div>
+      </div>
+    </div>
+  `;
 }
-function setFilter(p){state.filterPos=p;renderAndBind();}
 
-function openModal(){state.modal={position:"Goleiro",attrs:{}};renderAndBind();}
-function editPlayer(id){state.modal=JSON.parse(JSON.stringify(state.players.find(p=>p.id===id)));renderAndBind();}
-function closeModal(){state.modal=null;renderAndBind();}
-function setModalPos(pos){state.modal.position=pos;renderAndBind();}
+function render(){
+  const app=document.getElementById('app');
+  app.innerHTML=`
+    ${headerHTML()}
+    <div class="content fu">
+      ${state.tab==='jogadores'?jogadoresTabHTML():sorteioTabHTML()}
+    </div>
+    ${state.modal?modalHTML():''}
+    ${state.importOpen?importModalHTML():''}
+  `;
+  if(state.drawing){ runLotteryAnimation(); }
+}
+
+function setTab(tab){state.tab=tab;render();}
+function setFilterPos(pos){state.filterPos=pos;render();}
+function setTeamSize(n){state.teamSize=n;saveTeamSize(n);render();}
+
+function openAddModal(){state.modal={};render();}
+function editPlayer(id){state.modal=state.players.find(p=>p.id===id);render();}
+function closeModal(){state.modal=null;render();}
+function setModalPos(pos){state.modal.position=pos;render();}
+
 function saveModal(){
   const name=document.getElementById('f-name').value.trim();
-  if(!name){alert('Digite o nome do jogador');return;}
+  if(!name){return;}
+  const presente=document.getElementById('f-presente')?document.getElementById('f-presente').checked:true;
+  const convidado=document.getElementById('f-convidado')?document.getElementById('f-convidado').checked:false;
   const attrs={};
   ATTRS.forEach(a=>{const el=document.getElementById('sl-'+a.key);attrs[a.key]=el?parseInt(el.value):1;});
-  const m=state.modal;
-  if(m.id){
-    const idx=state.players.findIndex(p=>p.id===m.id);
-    state.players[idx]={...state.players[idx],name,position:m.position,attrs};
+  const pos=state.modal.position||"Goleiro";
+  if(state.modal.id){
+    const idx=state.players.findIndex(p=>p.id===state.modal.id);
+    state.players[idx]={...state.players[idx],name,position:pos,attrs,presente,convidado};
   } else {
-    state.players.push({id:uid(),name,position:m.position,attrs,presente:false,convidado:false});
+    state.players.push({id:uid(),name,position:pos,attrs,presente,convidado});
   }
   savePlayers(state.players);
   state.modal=null;
-  renderAndBind();
+  render();
 }
+
 function deletePlayer(id){
   if(!confirm('Remover este jogador?'))return;
   state.players=state.players.filter(p=>p.id!==id);
   savePlayers(state.players);
-  renderAndBind();
-}
-function marcarPresente(id){
-  const p=state.players.find(x=>x.id===id);if(p)p.presente=true;
-  savePlayers(state.players);renderAndBind();
-}
-function cancelarPresenca(id){
-  const p=state.players.find(x=>x.id===id);if(p)p.presente=false;
-  savePlayers(state.players);renderAndBind();
+  render();
 }
 
-// ---- draw with lottery animation ----
-function doDraw(){
-  const presentes=state.players.filter(p=>p.presente);
-  const pool=presentes.filter(p=>p.attrs&&ATTRS.some(a=>p.attrs[a.key]>0));
-  if(pool.length<PLAYERS_PER_TEAM)return;
+function openImport(){state.importOpen=true;state.importPreview=null;render();}
+function closeImport(){state.importOpen=false;state.importText='';state.importPreview=null;render();}
 
-  state.drawn=null;
-  state.drawing=true;
-  state.lotteryBalls=shuffle(pool);
-  state.lotteryBall={text:''};
-  renderAndBind();
-
-  const finalTeams=balancedDraw(pool);
-  // build a flat reveal order: round-robin across teams, so names get "called out"
-  // alternating teams rather than filling one team fully before the next
-  const maxLen=Math.max(...finalTeams.map(t=>t.players.length));
-  const revealSequence=[];
-  for(let i=0;i<maxLen;i++){
-    finalTeams.forEach(team=>{
-      if(team.players[i]) revealSequence.push({player:team.players[i],team});
-    });
-  }
-
-  let step=0;
-  const stepDuration=650;
-  const timer=setInterval(()=>{
-    if(step>=revealSequence.length){
-      clearInterval(timer);
-      state.drawing=false;
-      state.drawn=finalTeams;
-      state.lotteryBall=null;
-      renderAndBind();
-      return;
-    }
-    const {player,team}=revealSequence[step];
-    state.lotteryBall={text:`${player.name} → ${team.emoji} ${team.name}`};
-    // drum visibly empties as each name gets called
-    state.lotteryBalls=state.lotteryBalls.filter(p=>p.id!==player.id);
-    renderAndBind();
-    step++;
-  },stepDuration);
-}
-
-// ---- import flow ----
-function openImport(){state.importOpen=true;state.importPreview=null;state.importText="";renderAndBind();}
-function closeImport(){state.importOpen=false;state.importPreview=null;renderAndBind();}
-function runImportPreview(){
-  const raw=document.getElementById('import-textarea').value;
-  const parsed=parseWhatsappList(raw);
-  if(!parsed.length){alert('Não encontrei nenhum nome numerado na lista. Confira se colou o texto completo, com a numeração (1. 2. 3...).');return;}
+function previewImport(){
+  const raw=document.getElementById('f-import').value;
   state.importText=raw;
+  const parsed=parseWhatsappList(raw);
   state.importPreview=parsed;
-  renderAndBind();
+  render();
 }
+
 function confirmImport(){
-  const parsed=state.importPreview;
-  const existingNames=new Set(state.players.map(p=>p.name.toLowerCase()));
-  let added=0,updated=0;
+  const parsed=state.importPreview||[];
   parsed.forEach(pl=>{
-    const lower=pl.name.toLowerCase();
-    const existing=state.players.find(p=>p.name.toLowerCase()===lower);
-    if(existing){
-      existing.presente=pl.presente;
-      existing.convidado=pl.convidado||existing.convidado;
-      updated++;
-    } else {
-      state.players.push({
-        id:uid(),
-        name:pl.name,
-        position:"Goleiro",
-        attrs:{},
-        presente:pl.presente,
-        convidado:pl.convidado
-      });
-      added++;
-    }
+    state.players.push({id:uid(),name:pl.name,position:"Meio-campo",attrs:null,presente:pl.presente,convidado:pl.convidado});
   });
   savePlayers(state.players);
-  state.importOpen=false;
-  state.importPreview=null;
-  state.tab="presenca";
-  renderAndBind();
+  state.importOpen=false;state.importText='';state.importPreview=null;
+  render();
 }
 
-renderAndBind();
+function startDraw(){
+  state.drawing=true;
+  state.drawn=null;
+  render();
+}
+
+function runLotteryAnimation(){
+  const evaluated=state.players.filter(p=>p.attrs&&ATTRS.some(a=>p.attrs[a.key]));
+  const drum=document.getElementById('lottery-drum');
+  const statusEl=document.getElementById('lottery-status');
+  if(!drum||!statusEl)return;
+  const ballColors=["#D4AF37","#F4D160","#C0C0C0","#E8B84B","#9A7B1A"];
+  drum.innerHTML=evaluated.slice(0,14).map((p,i)=>`<div class="lottery-ball" style="background:${ballColors[i%ballColors.length]};animation-delay:${(i*0.07)}s">${p.name.slice(0,3).toUpperCase()}</div>`).join('');
+  const messages=["Embaralhando...","Calculando o equilíbrio...","Definindo os times...","Quase lá..."];
+  let mi=0;
+  const msgInterval=setInterval(()=>{
+    statusEl.innerHTML=`<span class="name-pop">${messages[mi%messages.length]}</span>`;
+    mi++;
+  },550);
+  setTimeout(()=>{
+    clearInterval(msgInterval);
+    state.drawing=false;
+    state.drawn=balancedDraw(evaluated,state.teamSize);
+    render();
+  },2200);
+}
+
+render();
 </script>
 </body>
 </html>
